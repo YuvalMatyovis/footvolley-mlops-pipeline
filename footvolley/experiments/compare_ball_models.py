@@ -1,7 +1,3 @@
-cd /workspaces/basketball-mlops-pipeline
-which ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
-
-cat > footvolley/src/compare_ball_models.py << 'EOF'
 #!/usr/bin/env python3
 """
 compare_ball_models.py  -  השוואת מודלי כדור V2 מול V3 על אותו קליפ
@@ -241,7 +237,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-EOF
-
-# בדיקת זמנים על 100 פריימים:
-python footvolley/src/compare_ball_models.py --max-frames 100
