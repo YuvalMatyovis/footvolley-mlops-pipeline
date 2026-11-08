@@ -1,7 +1,10 @@
 .venv/
 *.mp4
+*.mov
+*.zip
 *.pt
 outputs/
 __pycache__/
+.ipynb_checkpoints/
 footvolley/data/
 *.ndjson
