@@ -1,0 +1,639 @@
+{
+  "source": "manual",
+  "clip_id": "rally_56",
+  "counted_by": "gavish",
+  "counted_at": "2026-11-09T23:02:27.368Z",
+  "video": "WhatsApp Video 2026-11-08 at 15.48.49.mp4",
+  "duration_s": 57.79,
+  "fps": null,
+  "players": 4,
+  "seat_order": "left to right at the start of the clip (same as count_passes.assign_seats)",
+  "counting_mode": "receptions_only",
+  "start_seat": 4,
+  "touches": [
+    {
+      "time_s": 1.42,
+      "seat": 2,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 3.81,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 5.13,
+      "seat": 1,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 6.18,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 6.96,
+      "seat": 3,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 8.07,
+      "seat": 1,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 8.72,
+      "seat": 2,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 10.2,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 11.6,
+      "seat": 1,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 12.99,
+      "seat": 3,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 13.71,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 14.81,
+      "seat": 2,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 18.26,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 19.86,
+      "seat": 1,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 20.92,
+      "seat": 3,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 22.42,
+      "seat": 2,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 23.24,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 25.74,
+      "seat": 3,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 26.14,
+      "seat": 1,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 27.16,
+      "seat": 2,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 27.77,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 29.54,
+      "seat": 3,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 30.96,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 31.63,
+      "seat": 2,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 33.03,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 33.62,
+      "seat": 2,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 34.9,
+      "seat": 3,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 36.46,
+      "seat": 2,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 37.11,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 38.13,
+      "seat": 1,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 39.64,
+      "seat": 3,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 41.91,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 42.4,
+      "seat": 2,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 42.88,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 43.52,
+      "seat": 2,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 44.87,
+      "seat": 3,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 45.56,
+      "seat": 1,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 47.06,
+      "seat": 3,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 47.97,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 49.79,
+      "seat": 3,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 50.43,
+      "seat": 1,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 52.13,
+      "seat": 2,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 52.78,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 54.07,
+      "seat": 3,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 55.45,
+      "seat": 4,
+      "kind": "receive",
+      "chain": 1
+    },
+    {
+      "time_s": 57.69,
+      "seat": 2,
+      "kind": "receive",
+      "chain": 1
+    }
+  ],
+  "passes": [
+    {
+      "from_seat": 4,
+      "to_seat": 2,
+      "time_s": 1.42,
+      "chain": 1,
+      "pass_in_chain": 1
+    },
+    {
+      "from_seat": 2,
+      "to_seat": 4,
+      "time_s": 3.81,
+      "chain": 1,
+      "pass_in_chain": 2
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 1,
+      "time_s": 5.13,
+      "chain": 1,
+      "pass_in_chain": 3
+    },
+    {
+      "from_seat": 1,
+      "to_seat": 4,
+      "time_s": 6.18,
+      "chain": 1,
+      "pass_in_chain": 4
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 3,
+      "time_s": 6.96,
+      "chain": 1,
+      "pass_in_chain": 5
+    },
+    {
+      "from_seat": 3,
+      "to_seat": 1,
+      "time_s": 8.07,
+      "chain": 1,
+      "pass_in_chain": 6
+    },
+    {
+      "from_seat": 1,
+      "to_seat": 2,
+      "time_s": 8.72,
+      "chain": 1,
+      "pass_in_chain": 7
+    },
+    {
+      "from_seat": 2,
+      "to_seat": 4,
+      "time_s": 10.2,
+      "chain": 1,
+      "pass_in_chain": 8
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 1,
+      "time_s": 11.6,
+      "chain": 1,
+      "pass_in_chain": 9
+    },
+    {
+      "from_seat": 1,
+      "to_seat": 3,
+      "time_s": 12.99,
+      "chain": 1,
+      "pass_in_chain": 10
+    },
+    {
+      "from_seat": 3,
+      "to_seat": 4,
+      "time_s": 13.71,
+      "chain": 1,
+      "pass_in_chain": 11
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 2,
+      "time_s": 14.81,
+      "chain": 1,
+      "pass_in_chain": 12
+    },
+    {
+      "from_seat": 2,
+      "to_seat": 4,
+      "time_s": 18.26,
+      "chain": 1,
+      "pass_in_chain": 13
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 1,
+      "time_s": 19.86,
+      "chain": 1,
+      "pass_in_chain": 14
+    },
+    {
+      "from_seat": 1,
+      "to_seat": 3,
+      "time_s": 20.92,
+      "chain": 1,
+      "pass_in_chain": 15
+    },
+    {
+      "from_seat": 3,
+      "to_seat": 2,
+      "time_s": 22.42,
+      "chain": 1,
+      "pass_in_chain": 16
+    },
+    {
+      "from_seat": 2,
+      "to_seat": 4,
+      "time_s": 23.24,
+      "chain": 1,
+      "pass_in_chain": 17
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 3,
+      "time_s": 25.74,
+      "chain": 1,
+      "pass_in_chain": 18
+    },
+    {
+      "from_seat": 3,
+      "to_seat": 1,
+      "time_s": 26.14,
+      "chain": 1,
+      "pass_in_chain": 19
+    },
+    {
+      "from_seat": 1,
+      "to_seat": 2,
+      "time_s": 27.16,
+      "chain": 1,
+      "pass_in_chain": 20
+    },
+    {
+      "from_seat": 2,
+      "to_seat": 4,
+      "time_s": 27.77,
+      "chain": 1,
+      "pass_in_chain": 21
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 3,
+      "time_s": 29.54,
+      "chain": 1,
+      "pass_in_chain": 22
+    },
+    {
+      "from_seat": 3,
+      "to_seat": 4,
+      "time_s": 30.96,
+      "chain": 1,
+      "pass_in_chain": 23
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 2,
+      "time_s": 31.63,
+      "chain": 1,
+      "pass_in_chain": 24
+    },
+    {
+      "from_seat": 2,
+      "to_seat": 4,
+      "time_s": 33.03,
+      "chain": 1,
+      "pass_in_chain": 25
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 2,
+      "time_s": 33.62,
+      "chain": 1,
+      "pass_in_chain": 26
+    },
+    {
+      "from_seat": 2,
+      "to_seat": 3,
+      "time_s": 34.9,
+      "chain": 1,
+      "pass_in_chain": 27
+    },
+    {
+      "from_seat": 3,
+      "to_seat": 2,
+      "time_s": 36.46,
+      "chain": 1,
+      "pass_in_chain": 28
+    },
+    {
+      "from_seat": 2,
+      "to_seat": 4,
+      "time_s": 37.11,
+      "chain": 1,
+      "pass_in_chain": 29
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 1,
+      "time_s": 38.13,
+      "chain": 1,
+      "pass_in_chain": 30
+    },
+    {
+      "from_seat": 1,
+      "to_seat": 3,
+      "time_s": 39.64,
+      "chain": 1,
+      "pass_in_chain": 31
+    },
+    {
+      "from_seat": 3,
+      "to_seat": 4,
+      "time_s": 41.91,
+      "chain": 1,
+      "pass_in_chain": 32
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 2,
+      "time_s": 42.4,
+      "chain": 1,
+      "pass_in_chain": 33
+    },
+    {
+      "from_seat": 2,
+      "to_seat": 4,
+      "time_s": 42.88,
+      "chain": 1,
+      "pass_in_chain": 34
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 2,
+      "time_s": 43.52,
+      "chain": 1,
+      "pass_in_chain": 35
+    },
+    {
+      "from_seat": 2,
+      "to_seat": 3,
+      "time_s": 44.87,
+      "chain": 1,
+      "pass_in_chain": 36
+    },
+    {
+      "from_seat": 3,
+      "to_seat": 1,
+      "time_s": 45.56,
+      "chain": 1,
+      "pass_in_chain": 37
+    },
+    {
+      "from_seat": 1,
+      "to_seat": 3,
+      "time_s": 47.06,
+      "chain": 1,
+      "pass_in_chain": 38
+    },
+    {
+      "from_seat": 3,
+      "to_seat": 4,
+      "time_s": 47.97,
+      "chain": 1,
+      "pass_in_chain": 39
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 3,
+      "time_s": 49.79,
+      "chain": 1,
+      "pass_in_chain": 40
+    },
+    {
+      "from_seat": 3,
+      "to_seat": 1,
+      "time_s": 50.43,
+      "chain": 1,
+      "pass_in_chain": 41
+    },
+    {
+      "from_seat": 1,
+      "to_seat": 2,
+      "time_s": 52.13,
+      "chain": 1,
+      "pass_in_chain": 42
+    },
+    {
+      "from_seat": 2,
+      "to_seat": 4,
+      "time_s": 52.78,
+      "chain": 1,
+      "pass_in_chain": 43
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 3,
+      "time_s": 54.07,
+      "chain": 1,
+      "pass_in_chain": 44
+    },
+    {
+      "from_seat": 3,
+      "to_seat": 4,
+      "time_s": 55.45,
+      "chain": 1,
+      "pass_in_chain": 45
+    },
+    {
+      "from_seat": 4,
+      "to_seat": 2,
+      "time_s": 57.69,
+      "chain": 1,
+      "pass_in_chain": 46
+    }
+  ],
+  "drops": [],
+  "end_of_clip_s": 57.79,
+  "notes": [
+    "Counted with pass counter v1: only receptions were pressed, so touches = receptions (no self-juggles). touches_per_seat is a lower bound.",
+    "The single drop in the original export (57.79 s) was the end of the video, 0.1 s after the last pass, not a real drop. Moved to end_of_clip_s.",
+    "Whole clip is one open chain of 46 passes. Longest gap between passes: 3.45 s (14.81 to 18.26) with no drop.",
+    "Time is when the key was pressed, slightly after the touch. Match against pass_events.json with a tolerance of about 0.5 s."
+  ],
+  "summary": {
+    "touches": 46,
+    "passes": 46,
+    "touches_per_seat": {
+      "1": 8,
+      "2": 12,
+      "3": 11,
+      "4": 15
+    },
+    "drops": 0,
+    "self_touches": null,
+    "longest_chain": 46,
+    "chains": [
+      46
+    ]
+  }
+}
