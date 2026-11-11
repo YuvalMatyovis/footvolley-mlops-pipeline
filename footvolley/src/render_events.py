@@ -28,10 +28,11 @@ def main():
     ap.add_argument("--run", required=True)
     ap.add_argument("--seats", type=int, default=4)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--bg-filter", action="store_true", help="show the run made with count_passes --bg-filter")
     args = ap.parse_args()
 
     data, meta = cp.load_run(args.run)
-    events = json.load(open(os.path.join(args.run, "pass_events.json")))
+    events = json.load(open(os.path.join(args.run, "pass_events_bgfilter.json" if args.bg_filter else "pass_events.json")))
     fps = float(meta["fps"])
     seats, n_seats = cp.assign_seats(data, args.seats)
 
@@ -40,11 +41,12 @@ def main():
 
     cap = cv2.VideoCapture(args.video)
     W, H = int(cap.get(3)), int(cap.get(4))
-    out_path = args.out or os.path.join(args.run, "events_preview.mp4")
+    out_path = args.out or os.path.join(args.run, "events_preview_bgfilter.mp4" if args.bg_filter else "events_preview.mp4")
     raw = out_path.replace(".mp4", "_raw.mp4")
     writer = cv2.VideoWriter(raw, cv2.VideoWriter_fourcc(*"mp4v"), fps, (W, H))
 
-    pos, _ = cp.clean_ball_track(data)
+    ball_data = cp.remove_background(data, fps)[0] if args.bg_filter else data
+    pos, _ = cp.clean_ball_track(ball_data)
     pos, _ = cp.despike(pos)
     pos, _ = cp.drop_static_runs(pos, fps)
     pos, _ = cp.fill_gaps(pos, fps)

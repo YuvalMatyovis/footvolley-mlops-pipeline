@@ -3,8 +3,10 @@
 One entry per run. One change per experiment. Agree on the three lines (what / clip / success) **before** running.
 
 Reference for evaluation: manual counts made by the team with the pass counter (`footvolley/ground_truth/`).
-Main metric: pass-by-pass match against the manual count, 0.5 s window, reported separately as
-missed, invented (no netting out), receiver correct, and who-to-whom correct. Totals are secondary.
+Main metric (from 11.11): a system pass counts only if it is at the right time (0.5 s window,
+manual times shifted by a fixed 0.2 s key-press delay) AND goes to the same receiver. Always reported
+next to its chance level (the system's times shifted by several seconds). Also: missed, invented,
+who-to-whom. Time-only matching is no longer used: it is close to chance level.
 
 ## Template
 
@@ -17,6 +19,147 @@ missed, invented (no netting out), receiver correct, and who-to-whom correct. To
 - **Settings:** models, imgsz, conf, thresholds
 - **Results:**
 - **Notes / decision:**
+
+---
+
+### 2026-11-11 - people detector: yolo11n vs RF-DETR Nano vs RF-DETR Small (ALT-38) - done, RF-DETR Small preferred
+- **What:** only the player detector changes. Ball model, thresholds and pass logic are identical.
+- **Clip:** rally_56 (full, 3,465 frames)
+- **Success means:** an RF-DETR run is not worse than yolo11n on the player metrics (players per frame,
+  frames with >= 3 / exactly 4, count flicker, seat occupancy) and on the pass metrics vs Gavish's count
+  (missed, invented, receiver, who-to-whom; 0.5 s window, fixed 0.1 s offset). What counts as noise vs
+  worse is decided by the team after seeing the numbers.
+- **Branch / commit:** exp/people-detector-rfdetr
+- **Where it ran:** Colab T4 (notebooks/exp_people_detector.ipynb)
+- **Also saved for later experiments (not used in this one):** up to 3 ball candidates per frame,
+  player boxes below the confidence/size thresholds.
+- **Results** (files: `results/2026-11-11_people_detector/`):
+
+| metric | yolo11n | RF-DETR Nano | RF-DETR Small |
+| :--- | ---: | ---: | ---: |
+| frames with > 4 players (false boxes; no people in the background) | 6.3% | 2.2% | 2.3% |
+| player-count flicker | 13.0% | 6.9% | 6.4% |
+| frames with exactly 4 players | 35% | 39% | 41% |
+| passes matched / missed / invented | 27 / 19 / 20 | 25 / 21 / 19 | 26 / 20 / **9** |
+| receiver / who-to-whom correct | 12 / 3 | 10 / 4 | 11 / 7 |
+| people model s/frame (T4; RF-DETR not in optimized mode) | 0.016 | 0.022 | 0.031 |
+
+- **Notes / decision:**
+  - Run-to-run noise: this yolo11n run has the same settings as the 10.11 run; the ball is identical in
+    97.5% of frames, players in 92%, and passes differ by 1 (27/19/20 vs 26/20/21). A difference of
+    1-2 passes is noise.
+  - 15 of the ~20 missed passes are missed by all three detectors: misses come from the ball/touch stage.
+  - Seat swap: when the near player (S1) leaves the frame at ~40 s, yolo11n gives his seat to the left
+    player (S2); RF-DETR leaves the seat empty. Confirmed by eye (40-44 s, 46-47 s, 54-58 s).
+  - Who-to-whom is based on small numbers and is sensitive to the time offset; do not weigh it heavily.
+  - Decision (Sinai, 11.11): prefer RF-DETR Small. Before commercial use: verify the license of the exact
+    weights, dependencies and training data (Ido). Measure speed again in RF-DETR's optimized mode.
+  - Seat names (agreed 11.11): S1 near the camera, S2 left, S3 far, S4 right.
+  - Ground truth note: Gavish's count likely misses one last pass S2->S3 at the very end of the clip
+    (~57.7 s, heel touch). Treated as noise; file not changed.
+
+---
+
+### 2026-11-11 - ball background filter v1 - done, FAILED (not merged into the pipeline)
+- **What:** remove ball detections at fixed "background spots" (a spot where the ball is seen in many
+  different seconds and does not move). Only change; people = RF-DETR Small run, all thresholds as before.
+- **Clip:** rally_56, the RF-DETR Small run of 11.11 (local, no Colab)
+- **Success means (agreed before):** matched >= 29 (beyond noise from 26), invented <= 9, S1 touches far below 40.
+- **Branch:** exp/ball-background-filter (`count_passes.py --bg-filter`)
+- **Settings (fixed before the run):** grid cell = median ball size (19 px); spot = seen in >= 12% of the
+  clip's seconds (min 5; here 7) and median distance from the spot's center <= 0.35 ball size
+- **Results** (files: `results/2026-11-11_ball_bg_filter_v1/`):
+
+| | touches (S1/S2/S3/S4) | passes | matched | missed | invented | receiver | who-to-whom |
+| :--- | :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| baseline (RF-DETR Small) | 86 (40/21/6/19) | 35 | 26 | 20 | 9 | 11 | 7 |
+| background filter v1 | 59 (14/14/11/20) | 41 | 27 | 19 | 14 | 13 | 7 |
+
+  Missed-pass groups: baseline touch_right_seat 9, touch_wrong_seat 8, no_touch_ball_seen 3 ->
+  filter touch_right_seat 4, touch_wrong_seat 6, no_touch_ball_seen 8, no_ball 1.
+- **Notes / decision:** FAILED on matched and invented. The S1 overcount is gone (40 -> 14 touches) and
+  the spots at the left edge (x 25-90, y 230-360) are the object seen by eye. But the filter also marked
+  spots in the middle of the circle (x 230-330, y 150-270) where the real ball passes often: 1,071 of
+  2,767 ball detections were removed, real ones included, so "no_touch_ball_seen" grew from 3 to 8.
+  Cause: with a cell the size of one ball, any cell has a small spread, so the "does not move" test did
+  not separate a still object from a moving ball. Next: v2 with a stillness test over time (separate entry).
+
+---
+
+### 2026-11-11 - measurement: main metric, Gavish's delay, oracle mask, Ido's labels - done
+- **What:** no pipeline change. Fix the yardstick and find where the errors come from.
+- **Clip:** rally_56, the three people-detector runs of 11.11 (local)
+- **Files:** `results/2026-11-11_measurement/`, `footvolley/ground_truth/rally_56_ball_labels_ido_2026-11-10.json`
+
+1. **Time-only matching is close to chance.** With the system's times shifted by 3-29 s (pure
+   coincidence) time-only matching still gives ~22-25 "matches" vs 25-27 real. New main metric:
+   right time + right receiver, with its chance level reported.
+2. **Gavish's key-press delay, measured:** pairs where the system and Gavish agree on the receiver
+   (58 pairs over the 3 runs): median delay 0.21 s (per run 0.19 / 0.21 / 0.25). Fixed: offset 0.2 s,
+   window 0.5 s (below half the ~1.25 s between passes). Not to be changed per experiment.
+3. **The three detectors under the new metric** (right receiver / chance / missed / invented / who-to-whom):
+   yolo11n 15 / 8.5 / 31 / 32 / 5; RF-DETR Nano 15 / 8.5 / 31 / 29 / 5; RF-DETR Small 15 / 7.0 / 31 / 20 / 8.
+   Real signal is about 7-8 passes above chance. RF-DETR Small still best (fewest invented).
+4. **Oracle mask** (diagnosis only, never in the pipeline): ball detections at the left-edge object
+   (x < 100, y 210-370) and near the camera (y >= 700) removed by hand, RF-DETR Small run:
+   right receiver 15 -> 19 (chance 6), invented 20 -> 13, who-to-whom 8 -> 10. S1 touches 40 -> 13.
+   Caveat: the mask also removed real balls near the left player (S2 touches 21 -> 6), so the true
+   ceiling is somewhat higher. Remaining misses: touch at wrong seat 12, no ball 6, right seat but no
+   pass 5, ball seen but no touch 4. Conclusion: the fake ball costs a few passes, but it is not the
+   main problem; touch logic and missing detections matter as much.
+5. **Ido's 57 labelled frames** (49 with a ball; frame k assumed to be second k-1, one image per
+   second): the labelled ball is the chosen ball in 31 (63%), a lower-ranked candidate in 3 (6%), and
+   not among the 3 saved candidates (conf >= 0.10) in 15 (31%). Even when searching +-30 frames around
+   each assumed frame, 10 of 49 (20%) are never found: the detector misses the ball in at least ~20%
+   of these frames. In 2 of 8 frames with no ball the system reported one.
+- **Decision:** both code and training are needed. Code (selection by trajectory, touch-to-seat logic)
+  can recover part; ~20% detector misses need a better ball model.
+
+---
+
+### 2026-11-11 - touch = break in the ball's arc - done, FAILED (kept off)
+- **What:** touch detection changed from "2-frame velocity change" to "the ball's path cannot be fit by one
+  smooth arc" (parabola in time over +-0.1 s, RMS error > 0.4 ball sizes). Direction-free, so headers and
+  downward touches still count, while the top of a lob (one smooth arc) does not. Only change.
+- **Clip:** rally_56, RF-DETR Small run (local). `count_passes.py --touch-mode arc`
+- **Success means (agreed before):** right receiver >= 18 (from 15), invented <= 20, apex "touches" in mid-air gone.
+- **Results** (`results/2026-11-11_touch_arc_break/`), right receiver / chance / missed / invented / who-to-whom:
+  baseline (dv) 15 / 7 / 31 / 20 / 8; arc 13 / 7 / 33 / 25 / 7. Touches S1/S2/S3/S4: dv 40/21/6/19, arc 33/21/5/16.
+- **Notes / decision:** FAILED. The mid-air apex touch at 49.97 s (seen by eye) is gone, so the idea works where
+  the track is clean. But the fake ball at the left edge alternates with the real ball frame by frame; each jump
+  is a huge "break", so false touches near S1 remain (33). The arc test needs a clean ball track first:
+  re-test it after the trajectory-based ball selection experiment.
+
+---
+
+### 2026-11-11 - ball selection by trajectory - done, FAILED (kept off)
+- **What:** each frame's ball is chosen among the saved candidates (confidence >= 0.25) as the one nearest the
+  position predicted from the last two picks (constant velocity), within 2.5 ball sizes (+0.5 per extra frame);
+  none near -> frame left empty; stuck on a still object for 0.2 s -> switch; no pick for 6 frames -> restart from
+  the most confident. Touch detection unchanged (dv). Only change. `count_passes.py --ball-select track`
+- **Clip:** rally_56, RF-DETR Small run (local)
+- **Success means (agreed before):** right receiver >= 18, invented <= 20, S1 touches well below 40.
+- **Results** (`results/2026-11-11_ball_track_select/`), right receiver / chance / missed / invented / who-to-whom:
+  baseline 15 / 7.0 / 31 / 20 / 8; track 18 / 9.5 / 28 / 34 / 9. Passes 35 -> 52, touches S1/S2/S3/S4 40/21/6/19 -> 44/19/11/26.
+  Selection changed the ball in 1,033 frames, left 507 frames empty, 30 stuck-object switches.
+- **Notes / decision:** FAILED. Right receiver reached 18 but invented rose to 34, and the chance level rose with
+  the number of passes (9.5), so the real gain over chance is ~0.5 pass. S1 touches did not drop. The tracker does
+  not stay off the left-edge object. Open question for next time: are the S1 touches the fixed object, or the real
+  ball passing in front of S1's large box near the camera (2D overlap, no depth)? Look by eye before more code.
+
+---
+
+### 2026-11-11 - eye check of 10 false S1 touches (RF-DETR Small, events_preview.mp4) - done
+S1 has 40 touches vs 8 real receptions. 10 S1 touches far from any real S1 play were checked by eye (Sinai):
+- **7 of 10 - a fixed object detected as the ball** (sky / background at the left edge, also at 0.13 s centre-right
+  and 18.48 s right above the heads; 30.19 s an object on the sand). Times: 0.13, 10.24, 15.49, 18.48, 23.55, 25.07, 30.19.
+- **2 of 10 - real ball, 2D overlap**: the ball passes in front of / next to S1 in the image without a touch
+  (1.88 s); at 16.90 s S2 hits it while S1 and S2 overlap in the image (occlusion, extra bad detections).
+- **1 of 10 - S1 not in the frame** but the touch is still given to S1 (4.04 s); at 30.19 s only S1's right leg is in
+  the frame, so a partial box at the frame edge "owns" the touch.
+- **Conclusion:** fixed objects are the main cause, in several places (not only the left edge). Next: a motion-based
+  multi-frame ball tracker (VballNet, beach volleyball) or a background filter based on stillness over time; and a
+  rule that a partial box at the frame edge cannot own a touch.
 
 ---
 

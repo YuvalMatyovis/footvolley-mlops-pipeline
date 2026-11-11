@@ -1,0 +1,32 @@
+{
+  "clip": "footvolley/data/clips/rally_56s.mp4",
+  "people_backend": "yolo11n",
+  "people_model": "yolo11n.pt",
+  "ball_model": "footvolley/models/ball_v2.pt",
+  "out_root": "footvolley/outputs",
+  "ball_imgsz": 1088,
+  "conf_ball": 0.25,
+  "min_ball_area": 15,
+  "people_imgsz": 1280,
+  "conf_person": 0.25,
+  "min_person_area": 1500,
+  "store_conf": 0.1,
+  "old_area": 3500,
+  "trail": 15,
+  "max_frames": 0,
+  "progress_every": 500,
+  "fps": 59.958470323585395,
+  "width": 464,
+  "height": 832,
+  "frames": 3465,
+  "versions": {
+    "ultralytics": "8.4.191",
+    "rfdetr": "1.12.0",
+    "torch": "2.14.1+cu130",
+    "opencv-python": "5.0.0.93",
+    "opencv-python-headless": "5.0.0.93"
+  },
+  "git_commit": "232ed71",
+  "sec_per_frame_people": 0.0161,
+  "sec_per_frame_ball": 0.0141
+}

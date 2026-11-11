@@ -1,0 +1,29 @@
+{
+  "groups": {
+    "touch_wrong_seat": 6,
+    "no_touch_ball_seen": 8,
+    "touch_right_seat": 4,
+    "no_ball": 1
+  },
+  "rows": [
+    "   1.32s  S4->S2  touch_wrong_seat    touches near: [('S1', 1.35)]  ball in 99% of frames",
+    "   8.62s  S1->S2  no_touch_ball_seen  touches near: []  ball in 94% of frames",
+    "  11.50s  S4->S1  no_touch_ball_seen  touches near: []  ball in 100% of frames",
+    "  13.61s  S3->S4  touch_wrong_seat    touches near: [('S3', 14.08)]  ball in 81% of frames",
+    "  19.76s  S4->S1  no_touch_ball_seen  touches near: []  ball in 54% of frames",
+    "  20.82s  S1->S3  no_touch_ball_seen  touches near: []  ball in 68% of frames",
+    "  25.64s  S4->S3  touch_wrong_seat    touches near: [('S1', 25.38)]  ball in 100% of frames",
+    "  26.04s  S3->S1  no_touch_ball_seen  touches near: []  ball in 100% of frames",
+    "  27.67s  S2->S4  touch_right_seat    touches near: [('S4', 27.19), ('S4', 27.6)]  ball in 68% of frames",
+    "  32.93s  S2->S4  touch_wrong_seat    touches near: [('S3', 32.91), ('S2', 33.09)]  ball in 57% of frames",
+    "  33.52s  S4->S2  touch_right_seat    touches near: [('S2', 33.09)]  ball in 82% of frames",
+    "  34.80s  S2->S3  touch_wrong_seat    touches near: [('S2', 34.47)]  ball in 89% of frames",
+    "  41.81s  S3->S4  no_touch_ball_seen  touches near: []  ball in 88% of frames",
+    "  42.30s  S4->S2  no_touch_ball_seen  touches near: []  ball in 86% of frames",
+    "  42.78s  S2->S4  touch_wrong_seat    touches near: [('S2', 43.05)]  ball in 79% of frames",
+    "  43.42s  S4->S2  touch_right_seat    touches near: [('S2', 43.05), ('S2', 43.48)]  ball in 79% of frames",
+    "  47.87s  S3->S4  touch_right_seat    touches near: [('S4', 47.92)]  ball in 31% of frames",
+    "  49.69s  S4->S3  no_ball             touches near: []  ball in 29% of frames",
+    "  57.59s  S4->S2  no_touch_ball_seen  touches near: []  ball in 98% of frames"
+  ]
+}

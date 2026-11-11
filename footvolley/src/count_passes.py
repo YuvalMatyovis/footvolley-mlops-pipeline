@@ -30,6 +30,20 @@ SPIKE_PX = 45.0            # a detection this far from both neighbours (that are
 STATIC_PX = 8.0            # detections that stay within this radius ...
 STATIC_S = 0.40            # ... for at least this long are a stuck false detection, not a flying ball
 MIN_SPEED = 2.0            # a touch needs the ball to move at least this fast (px/frame) before or after
+# ---- arc-break touch detection (off unless --touch-mode arc); values fixed before the 11.11 experiment
+ARC_HALF_S = 0.10          # look this long before and after each frame (6 frames at 60 fps)
+ARC_BREAK = 0.40           # touch if one smooth arc cannot fit the window: RMS error > this x ball size
+ARC_MIN_VALID = 0.7        # need ball positions in at least this share of the window's frames
+# ---- ball selection by trajectory (off unless --ball-select track); values fixed before the 11.11 experiment
+TRK_GATE = 2.5             # pick the candidate nearest the predicted position if within this many ball sizes
+TRK_GATE_GROW = 0.5        # ... plus this many ball sizes per extra frame since the last pick
+TRK_REINIT_FRAMES = 6      # no pick for this many frames -> restart from the most confident candidate
+TRK_STATIC_S = 0.2         # picks that stayed within half a ball size for this long ...
+TRK_STATIC_SPREAD = 0.5    # ... are a stuck object: switch to another candidate if one exists
+# ---- background filter (off unless --bg-filter); values fixed before the 11.11 experiment, not tuned
+BG_MIN_SECONDS_FRAC = 0.12 # a spot is background if the "ball" is seen there in >= this share of the clip's seconds
+BG_MIN_SECONDS = 5         # ... and in at least this many different seconds
+BG_MAX_SPREAD = 0.35       # ... and its detections stay within this fraction of a ball size (it does not move)
 
 
 def load_run(run_dir):
@@ -40,6 +54,51 @@ def load_run(run_dir):
 
 def box_center(b):
     return ((b[0] + b[2]) / 2.0, (b[1] + b[3]) / 2.0)
+
+
+def background_spots(data, fps):
+    """Find image spots where a 'ball' is detected again and again over the whole clip without moving
+    (a fixed object such as something in the sky or on the sand). Sizes are relative to the median
+    ball size of the clip, so no pixel values are tied to one clip. Returns (spots, ball_size)."""
+    boxes = [(f["frame"], f["ball"]) for f in data if f["ball"]]
+    if not boxes:
+        return [], 0.0
+    size = float(np.median([((b[2] - b[0]) + (b[3] - b[1])) / 2.0 for _, b in boxes]))
+    min_secs = max(BG_MIN_SECONDS, int(round(BG_MIN_SECONDS_FRAC * len(data) / fps)))
+    spots = []
+    for shift in (0.0, 0.5):  # two grids, the second shifted half a cell, so a spot on a cell edge is not split
+        cells = {}
+        for fr, b in boxes:
+            c = np.array(box_center(b))
+            key = tuple(((c / size) + shift).astype(int))
+            cells.setdefault(key, []).append((fr, c))
+        for items in cells.values():
+            secs = {int(fr / fps) for fr, _ in items}
+            if len(secs) < min_secs:
+                continue
+            pts = np.array([c for _, c in items])
+            mid = np.median(pts, axis=0)
+            spread = float(np.median(np.hypot(*(pts - mid).T)))
+            if spread <= BG_MAX_SPREAD * size:
+                spots.append({"center": [round(float(mid[0]), 1), round(float(mid[1]), 1)],
+                              "detections": len(items), "seconds": len(secs), "spread_px": round(spread, 1)})
+    return spots, size
+
+
+def remove_background(data, fps):
+    """Return a copy of data with ball detections at background spots set to None, plus a report."""
+    spots, size = background_spots(data, fps)
+    out, removed = [], 0
+    for f in data:
+        g = dict(f)
+        b = f["ball"]
+        if b:
+            c = np.array(box_center(b))
+            if any(np.hypot(*(c - np.array(s["center"]))) <= size for s in spots):
+                g["ball"] = None
+                removed += 1
+        out.append(g)
+    return out, {"ball_size_px": round(size, 1), "spots": spots, "removed": removed}
 
 
 def clean_ball_track(data):
@@ -206,6 +265,114 @@ def detect_touches(pos, seats_per_frame, fps):
     return touches
 
 
+def select_ball_by_track(data, fps, conf_min):
+    """Return a copy of data where each frame's ball is chosen among its saved candidates
+    (ball_candidates, confidence >= conf_min) as the one that continues the ball's path
+    (constant-velocity prediction from the last two picks), not simply the most confident one.
+    A frame with no candidate near the prediction is left empty (short gaps are filled later)."""
+    size = ball_size_px(data)
+    static_n = max(3, int(round(TRK_STATIC_S * fps)))
+    out, hist = [], []          # hist: list of (frame, np.array center)
+    switched = empty = 0
+    for f in data:
+        g = dict(f)
+        cands = [c for c in f.get("ball_candidates", []) if c[4] >= conf_min]
+        cents = [np.array(box_center(c)) for c in cands]
+        pick = None
+        if cands:
+            if not hist or f["frame"] - hist[-1][0] > TRK_REINIT_FRAMES:
+                pick = 0                                   # restart: most confident
+            else:
+                t1, p1 = hist[-1]
+                dt = f["frame"] - t1
+                pred = p1 + ((p1 - hist[-2][1]) / max(t1 - hist[-2][0], 1)) * dt if len(hist) > 1 else p1
+                gate = size * (TRK_GATE + TRK_GATE_GROW * (dt - 1))
+                d = [float(np.hypot(*(c - pred))) for c in cents]
+                j = int(np.argmin(d))
+                pick = j if d[j] <= gate else None
+            # stuck on something that does not move? switch to another candidate if there is one
+            if pick is not None and len(hist) >= static_n:
+                recent = np.array([p for _, p in hist[-static_n:]])
+                if np.max(np.hypot(*(recent - recent.mean(axis=0)).T)) <= TRK_STATIC_SPREAD * size:
+                    others = [k for k in range(len(cands))
+                              if np.hypot(*(cents[k] - recent.mean(axis=0))) > 2 * size]
+                    if others:
+                        pick = others[0]
+                        hist = []
+                        switched += 1
+        if pick is None:
+            g["ball"] = None
+            if f["ball"]:
+                empty += 1
+        else:
+            g["ball"] = cands[pick]
+            hist.append((f["frame"], cents[pick]))
+            hist = hist[-max(static_n, 2):]
+        out.append(g)
+    changed = sum(1 for a, b in zip(data, out) if a["ball"] != b["ball"])
+    return out, {"ball_size_px": round(size, 1), "frames_changed": changed,
+                 "emptied": empty, "static_switches": switched}
+
+
+def ball_size_px(data):
+    sizes = [((b[2] - b[0]) + (b[3] - b[1])) / 2.0 for b in (f["ball"] for f in data) if b]
+    return float(np.median(sizes)) if sizes else 15.0
+
+
+def arc_break_scores(pos, fps, ball_size):
+    """For every frame: how badly ONE smooth arc (a parabola in time, for x and y) fits the ball
+    positions from ARC_HALF_S before to ARC_HALF_S after, as RMS error in ball sizes.
+    Free flight, including the top of a lob, is one arc -> small error. A touch in any direction
+    (up, down, sideways) breaks the arc -> large error."""
+    n = len(pos)
+    k = max(3, int(round(ARC_HALF_S * fps)))
+    score = np.full(n, np.nan)
+    ts = np.arange(-k, k + 1, dtype=float)
+    for t in range(k, n - k):
+        win = pos[t - k:t + k + 1]
+        ok = ~np.isnan(win[:, 0])
+        if ok.mean() < ARC_MIN_VALID:
+            continue
+        err = []
+        for dim in (0, 1):
+            c = np.polyfit(ts[ok], win[ok, dim], 2)
+            err.append(win[ok, dim] - np.polyval(c, ts[ok]))
+        score[t] = float(np.sqrt(np.mean(np.square(err[0]) + np.square(err[1])))) / ball_size
+    return score
+
+
+def detect_touches_arc(pos, seats_per_frame, fps, ball_size):
+    """Like detect_touches, but a touch is a break in the ball's arc instead of a 2-frame velocity change."""
+    n = len(pos)
+    score = arc_break_scores(pos, fps, ball_size)
+    min_gap = int(round(MIN_TOUCH_GAP_S * fps))
+    touches = []
+    t = 0
+    while t < n:
+        if np.isnan(score[t]) or score[t] < ARC_BREAK:
+            t += 1
+            continue
+        end = min(t + min_gap, n - 1)
+        best = t + int(np.nanargmax(score[t:end + 1]))
+        cand = None
+        for tt in range(max(0, best - 3), min(n, best + 4)):
+            if np.isnan(pos[tt][0]):
+                continue
+            for si, box in seats_per_frame[tt].items():
+                d = box_distance(pos[tt], box)
+                if cand is None or d < cand[0]:
+                    cand = (d, si, tt)
+        if cand is not None and cand[0] <= TOUCH_NEAR_PX:
+            touches.append({"frame": int(best), "time_s": round(best / fps, 2),
+                            "seat": int(cand[1]) + 1, "dist_px": round(cand[0], 1),
+                            "arc_break": round(float(score[best]), 2),
+                            "ball": [int(pos[best][0]), int(pos[best][1])]})
+            t = best + min_gap
+        else:
+            t += 1
+    return touches
+
+
 def merge_bursts(touches):
     """Noise suppression: a second 'touch' by the same seat within MERGE_SAME_SEAT_S
     of the previous kept one is treated as jitter of the same contact (a noisy ball
@@ -246,17 +413,39 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True, help="folder with tracking_data.json + meta.json")
     ap.add_argument("--seats", type=int, default=4)
+    ap.add_argument("--bg-filter", action="store_true", help="remove ball detections at fixed background spots")
+    ap.add_argument("--ball-select", choices=("conf", "track"), default="conf",
+                    help="conf = most confident candidate (original), track = candidate that continues the path")
+    ap.add_argument("--touch-mode", choices=("dv", "arc"), default="dv",
+                    help="dv = 2-frame velocity change (original), arc = break in the ball's arc")
     args = ap.parse_args()
 
     data, meta = load_run(args.run)
     fps = float(meta["fps"])
-    pos, rejected = clean_ball_track(data)
+    bg = None
+    if args.bg_filter:
+        data_ball, bg = remove_background(data, fps)
+        print(f" background filter: ball size {bg['ball_size_px']}px, removed {bg['removed']} detections at "
+              f"{len(bg['spots'])} spot(s):")
+        for sp in bg["spots"]:
+            print(f"   at x={sp['center'][0]:.0f} y={sp['center'][1]:.0f}: {sp['detections']} detections "
+                  f"in {sp['seconds']} different seconds, spread {sp['spread_px']}px")
+    else:
+        data_ball = data
+    trk = None
+    if args.ball_select == "track":
+        data_ball, trk = select_ball_by_track(data_ball, fps, float(meta.get("conf_ball", 0.25)))
+        print(f" track selection: {trk}")
+    pos, rejected = clean_ball_track(data_ball)
     pos, spikes = despike(pos)
     pos, static = drop_static_runs(pos, fps)
     raw_n = int(np.sum(~np.isnan(pos[:, 0])))
     pos, filled = fill_gaps(pos, fps)
     seats, n_seats = assign_seats(data, args.seats)
-    raw_touches = detect_touches(pos, seats, fps)
+    if args.touch_mode == "arc":
+        raw_touches = detect_touches_arc(pos, seats, fps, ball_size_px(data_ball))
+    else:
+        raw_touches = detect_touches(pos, seats, fps)
     touches = merge_bursts(raw_touches)
     passes, longest = count_passes(touches)
 
@@ -272,10 +461,12 @@ def main():
     print(" touches per seat: " + "  ".join(f"S{s}: {c}" for s, c in sorted(per_seat.items())))
     print("=" * 62)
 
-    out = {"fps": fps, "touches": touches, "passes": passes,
+    out = {"fps": fps, "bg_filter": bg, "track_select": trk, "touches": touches, "passes": passes,
            "summary": {"touches": len(touches), "passes": len(passes),
                        "touches_per_seat": per_seat}}
-    path = os.path.join(args.run, "pass_events.json")
+    suffix = (("_bgfilter" if args.bg_filter else "") + ("_track" if args.ball_select == "track" else "")
+              + ("_arc" if args.touch_mode == "arc" else ""))
+    path = os.path.join(args.run, f"pass_events{suffix}.json")
     json.dump(out, open(path, "w"), indent=2)
     print("saved", path)
 

@@ -1,0 +1,29 @@
+{
+  "groups": {
+    "touch_wrong_seat": 8,
+    "touch_right_seat": 9,
+    "no_touch_ball_seen": 3
+  },
+  "rows": [
+    "   1.32s  S4->S2  touch_wrong_seat    touches near: [('S1', 1.35), ('S1', 1.88)]  ball in 99% of frames",
+    "   5.03s  S4->S1  touch_right_seat    touches near: [('S1', 4.79)]  ball in 78% of frames",
+    "   7.97s  S3->S1  touch_right_seat    touches near: [('S1', 7.69), ('S1', 8.11)]  ball in 76% of frames",
+    "   8.62s  S1->S2  touch_wrong_seat    touches near: [('S1', 8.11), ('S1', 9.04)]  ball in 94% of frames",
+    "  10.10s  S2->S4  touch_wrong_seat    touches near: [('S1', 10.24), ('S1', 10.69)]  ball in 83% of frames",
+    "  11.50s  S4->S1  touch_right_seat    touches near: [('S1', 11.67)]  ball in 100% of frames",
+    "  13.61s  S3->S4  touch_wrong_seat    touches near: [('S1', 13.19), ('S2', 13.36), ('S1', 13.53), ('S1', 14.11)]  ball in 81% of frames",
+    "  18.16s  S2->S4  touch_wrong_seat    touches near: [('S1', 17.96), ('S1', 18.48)]  ball in 100% of frames",
+    "  19.76s  S4->S1  no_touch_ball_seen  touches near: []  ball in 54% of frames",
+    "  20.82s  S1->S3  no_touch_ball_seen  touches near: []  ball in 68% of frames",
+    "  25.64s  S4->S3  touch_wrong_seat    touches near: [('S1', 25.07), ('S1', 25.95)]  ball in 100% of frames",
+    "  26.04s  S3->S1  touch_right_seat    touches near: [('S1', 25.95)]  ball in 100% of frames",
+    "  38.03s  S4->S1  touch_right_seat    touches near: [('S1', 37.49), ('S1', 37.94)]  ball in 94% of frames",
+    "  41.81s  S3->S4  no_touch_ball_seen  touches near: []  ball in 88% of frames",
+    "  42.30s  S4->S2  touch_wrong_seat    touches near: [('S4', 42.71)]  ball in 86% of frames",
+    "  45.46s  S3->S1  touch_right_seat    touches near: [('S1', 44.91), ('S1', 45.4)]  ball in 99% of frames",
+    "  47.87s  S3->S4  touch_right_seat    touches near: [('S4', 47.92)]  ball in 31% of frames",
+    "  52.68s  S2->S4  touch_right_seat    touches near: [('S4', 52.09), ('S4', 52.57)]  ball in 49% of frames",
+    "  55.35s  S3->S4  touch_right_seat    touches near: [('S2', 55.27), ('S4', 55.46), ('S2', 55.64)]  ball in 100% of frames",
+    "  57.59s  S4->S2  touch_wrong_seat    touches near: [('S4', 57.16), ('S4', 57.64)]  ball in 98% of frames"
+  ]
+}
