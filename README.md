@@ -49,7 +49,7 @@ Perception is much faster on a GPU (for example a free Google Colab T4) than on 
 footvolley/
   src/          active pipeline: perception.py, count_passes.py, render_events.py, evaluate_detectors.py
   tools/        data preparation: frame extraction, label export -> YOLO dataset
-  experiments/  earlier or one-off scripts (kept for reference, may not run as is)
+  ground_truth/ manual counts from the team's pass counter (the reference for evaluation)
   training/     model cards and training logs (ball_v1, ball_v2, ball_v3)
   models/       weights (git-ignored)   data/  clips, labels (git-ignored)   outputs/  runs (git-ignored)
 docs/           status reports and early experiment notes
