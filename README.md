@@ -8,7 +8,7 @@ Status: **proof of concept**. Everything below was measured on one 58-second cli
 
 ```
 video -> perception.py -> tracking_data.json -> count_passes.py -> pass_events.json -> render_events.py -> events_preview.mp4
-          players: yolo11n (COCO), high resolution
+          players: yolo11n (COCO) or RF-DETR (--people-backend rfdetr-small)
           ball:    ball_v2 (custom single-class detector)
 ```
 
@@ -30,6 +30,17 @@ Notes:
 - `ball_v3` (extra frames labeled by a collaborator, classes `ball` and `person`) looked excellent at first (99.5% detection) only because the `person` class was being counted as a ball. With a proper class filter it finds the ball much less often than `ball_v2`. Its validation numbers (P 0.91 / R 0.84) are probably averaged over both classes and are not comparable. Why it is weaker has not been diagnosed (labels, class setup and resolution are the suspects).
 - The people-detection settings (imgsz 1280, conf 0.25, min area 1500) were chosen to catch the player farthest from the camera and confirmed by eye, not by a systematic search.
 
+### Update 11.11: pass-by-pass evaluation
+
+Matching only the total pass count turned out to be misleading, so passes are now compared one by one with the manual count (`evaluate_passes.py`). A system pass counts only if it is at the right time (0.5 s window, manual times shifted 0.2 s for the key-press delay) **and** goes to the right receiver. Each result is shown next to a "chance" number (the same matching with the system times shifted by a few seconds), because with a pass every ~1.25 s some matches happen by luck.
+
+| Run on `rally_56` (47 manual passes) | right receiver | chance | invented |
+| :--- | ---: | ---: | ---: |
+| yolo11n players | 15 | 8.5 | 32 |
+| RF-DETR Small players | 15 | 7 | 20 |
+
+So the pass detection is still weak: about 15 out of 47, not much above chance. RF-DETR Small gives the same hits with fewer invented passes and steadier seats, so it is the preferred player detector for now (license still to be checked). Three quick ideas to clean the ball track (background filter, touch = break in the arc, picking the ball by trajectory) did not help. Checking the false touches by eye showed the main problem is the ball detector: fixed objects on the sand are often picked as the ball, and on the 57 frames Ido labeled the ball is missed in at least 20% of them. Details and all numbers: [`experiments_log.md`](experiments_log.md) and [`results/`](results/).
+
 ## Quickstart
 
 ```bash
@@ -39,7 +50,13 @@ pip install -r requirements.txt
 python footvolley/src/perception.py --clip footvolley/data/clips/rally_56.mp4
 python footvolley/src/count_passes.py --run footvolley/outputs/<run folder>
 python footvolley/src/render_events.py --video footvolley/data/clips/rally_56.mp4 --run footvolley/outputs/<run folder>
+
+# compare with the manual count, and see why passes were missed
+python footvolley/src/evaluate_passes.py --run footvolley/outputs/<run folder> --truth footvolley/ground_truth/rally_56_manual_gavish_2026-11-10.json
+python footvolley/src/diagnose_misses.py --run footvolley/outputs/<run folder> --truth footvolley/ground_truth/rally_56_manual_gavish_2026-11-10.json
 ```
+
+The notebook `notebooks/exp_people_detector.ipynb` runs the same steps on Colab (clip and weights from Google Drive).
 
 Perception is much faster on a GPU (for example a free Google Colab T4) than on CPU, where the 58 s clip takes a long time.
 
@@ -47,12 +64,16 @@ Perception is much faster on a GPU (for example a free Google Colab T4) than on 
 
 ```
 footvolley/
-  src/          active pipeline: perception.py, count_passes.py, render_events.py, evaluate_detectors.py
+  src/          active pipeline: perception.py, count_passes.py, render_events.py,
+                evaluation: evaluate_passes.py, diagnose_misses.py, compare_people.py, evaluate_detectors.py
   tools/        data preparation: frame extraction, label export -> YOLO dataset
   ground_truth/ manual counts from the team's pass counter (the reference for evaluation)
   training/     model cards and training logs (ball_v1, ball_v2, ball_v3)
   models/       weights (git-ignored)   data/  clips, labels (git-ignored)   outputs/  runs (git-ignored)
+notebooks/      Colab notebook for GPU runs
+results/        small result files from each experiment (one folder per experiment)
 docs/           status reports and early experiment notes
+experiments_log.md  one entry per experiment: what was tested, result, decision
 ```
 
 ## Known limitations
@@ -64,8 +85,10 @@ docs/           status reports and early experiment notes
 
 ## Next steps
 
-- [ ] Check the pass list in `render_events.py` video against the manual count pass by pass (not just the total); get a second clip to validate the thresholds.
-- [ ] Label about 30 frames of `rally_56` to get real precision/recall for the ball and for far players.
+- [x] Compare passes one by one with the manual count (done 11.11, see above).
+- [ ] Try a multi-frame ball tracker (for example VballNet or WASB, licenses to check) instead of a single-frame ball detector.
+- [ ] Filter fixed objects that are detected as the ball (they don't move over time).
+- [ ] Retrain the ball detector with more labeled frames; get a second clip to validate the thresholds.
 - [ ] Drop detection, per-player statistics, longest chain without a drop.
 - [ ] Audit the labels used for `ball_v3` and retrain.
 - [ ] Later: experiment tracking (MLflow), data versioning (DVC), CI, Docker, a simple dashboard.
