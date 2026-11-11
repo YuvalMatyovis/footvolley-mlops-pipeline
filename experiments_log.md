@@ -117,6 +117,21 @@ who-to-whom. Time-only matching is no longer used: it is close to chance level.
 
 ---
 
+### 2026-11-11 - touch = break in the ball's arc - done, FAILED (kept off)
+- **What:** touch detection changed from "2-frame velocity change" to "the ball's path cannot be fit by one
+  smooth arc" (parabola in time over +-0.1 s, RMS error > 0.4 ball sizes). Direction-free, so headers and
+  downward touches still count, while the top of a lob (one smooth arc) does not. Only change.
+- **Clip:** rally_56, RF-DETR Small run (local). `count_passes.py --touch-mode arc`
+- **Success means (agreed before):** right receiver >= 18 (from 15), invented <= 20, apex "touches" in mid-air gone.
+- **Results** (`results/2026-11-11_touch_arc_break/`), right receiver / chance / missed / invented / who-to-whom:
+  baseline (dv) 15 / 7 / 31 / 20 / 8; arc 13 / 7 / 33 / 25 / 7. Touches S1/S2/S3/S4: dv 40/21/6/19, arc 33/21/5/16.
+- **Notes / decision:** FAILED. The mid-air apex touch at 49.97 s (seen by eye) is gone, so the idea works where
+  the track is clean. But the fake ball at the left edge alternates with the real ball frame by frame; each jump
+  is a huge "break", so false touches near S1 remain (33). The arc test needs a clean ball track first:
+  re-test it after the trajectory-based ball selection experiment.
+
+---
+
 ## Prior results (reported 10.11, code not saved, not re-verified)
 
 Count_passes v1 vs Gavish's count (46 passes), 0.5 s window, one-to-one matching:

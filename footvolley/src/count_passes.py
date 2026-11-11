@@ -30,6 +30,10 @@ SPIKE_PX = 45.0            # a detection this far from both neighbours (that are
 STATIC_PX = 8.0            # detections that stay within this radius ...
 STATIC_S = 0.40            # ... for at least this long are a stuck false detection, not a flying ball
 MIN_SPEED = 2.0            # a touch needs the ball to move at least this fast (px/frame) before or after
+# ---- arc-break touch detection (off unless --touch-mode arc); values fixed before the 11.11 experiment
+ARC_HALF_S = 0.10          # look this long before and after each frame (6 frames at 60 fps)
+ARC_BREAK = 0.40           # touch if one smooth arc cannot fit the window: RMS error > this x ball size
+ARC_MIN_VALID = 0.7        # need ball positions in at least this share of the window's frames
 # ---- background filter (off unless --bg-filter); values fixed before the 11.11 experiment, not tuned
 BG_MIN_SECONDS_FRAC = 0.12 # a spot is background if the "ball" is seen there in >= this share of the clip's seconds
 BG_MIN_SECONDS = 5         # ... and in at least this many different seconds
@@ -255,6 +259,65 @@ def detect_touches(pos, seats_per_frame, fps):
     return touches
 
 
+def ball_size_px(data):
+    sizes = [((b[2] - b[0]) + (b[3] - b[1])) / 2.0 for b in (f["ball"] for f in data) if b]
+    return float(np.median(sizes)) if sizes else 15.0
+
+
+def arc_break_scores(pos, fps, ball_size):
+    """For every frame: how badly ONE smooth arc (a parabola in time, for x and y) fits the ball
+    positions from ARC_HALF_S before to ARC_HALF_S after, as RMS error in ball sizes.
+    Free flight, including the top of a lob, is one arc -> small error. A touch in any direction
+    (up, down, sideways) breaks the arc -> large error."""
+    n = len(pos)
+    k = max(3, int(round(ARC_HALF_S * fps)))
+    score = np.full(n, np.nan)
+    ts = np.arange(-k, k + 1, dtype=float)
+    for t in range(k, n - k):
+        win = pos[t - k:t + k + 1]
+        ok = ~np.isnan(win[:, 0])
+        if ok.mean() < ARC_MIN_VALID:
+            continue
+        err = []
+        for dim in (0, 1):
+            c = np.polyfit(ts[ok], win[ok, dim], 2)
+            err.append(win[ok, dim] - np.polyval(c, ts[ok]))
+        score[t] = float(np.sqrt(np.mean(np.square(err[0]) + np.square(err[1])))) / ball_size
+    return score
+
+
+def detect_touches_arc(pos, seats_per_frame, fps, ball_size):
+    """Like detect_touches, but a touch is a break in the ball's arc instead of a 2-frame velocity change."""
+    n = len(pos)
+    score = arc_break_scores(pos, fps, ball_size)
+    min_gap = int(round(MIN_TOUCH_GAP_S * fps))
+    touches = []
+    t = 0
+    while t < n:
+        if np.isnan(score[t]) or score[t] < ARC_BREAK:
+            t += 1
+            continue
+        end = min(t + min_gap, n - 1)
+        best = t + int(np.nanargmax(score[t:end + 1]))
+        cand = None
+        for tt in range(max(0, best - 3), min(n, best + 4)):
+            if np.isnan(pos[tt][0]):
+                continue
+            for si, box in seats_per_frame[tt].items():
+                d = box_distance(pos[tt], box)
+                if cand is None or d < cand[0]:
+                    cand = (d, si, tt)
+        if cand is not None and cand[0] <= TOUCH_NEAR_PX:
+            touches.append({"frame": int(best), "time_s": round(best / fps, 2),
+                            "seat": int(cand[1]) + 1, "dist_px": round(cand[0], 1),
+                            "arc_break": round(float(score[best]), 2),
+                            "ball": [int(pos[best][0]), int(pos[best][1])]})
+            t = best + min_gap
+        else:
+            t += 1
+    return touches
+
+
 def merge_bursts(touches):
     """Noise suppression: a second 'touch' by the same seat within MERGE_SAME_SEAT_S
     of the previous kept one is treated as jitter of the same contact (a noisy ball
@@ -296,6 +359,8 @@ def main():
     ap.add_argument("--run", required=True, help="folder with tracking_data.json + meta.json")
     ap.add_argument("--seats", type=int, default=4)
     ap.add_argument("--bg-filter", action="store_true", help="remove ball detections at fixed background spots")
+    ap.add_argument("--touch-mode", choices=("dv", "arc"), default="dv",
+                    help="dv = 2-frame velocity change (original), arc = break in the ball's arc")
     args = ap.parse_args()
 
     data, meta = load_run(args.run)
@@ -316,7 +381,10 @@ def main():
     raw_n = int(np.sum(~np.isnan(pos[:, 0])))
     pos, filled = fill_gaps(pos, fps)
     seats, n_seats = assign_seats(data, args.seats)
-    raw_touches = detect_touches(pos, seats, fps)
+    if args.touch_mode == "arc":
+        raw_touches = detect_touches_arc(pos, seats, fps, ball_size_px(data_ball))
+    else:
+        raw_touches = detect_touches(pos, seats, fps)
     touches = merge_bursts(raw_touches)
     passes, longest = count_passes(touches)
 
@@ -335,7 +403,8 @@ def main():
     out = {"fps": fps, "bg_filter": bg, "touches": touches, "passes": passes,
            "summary": {"touches": len(touches), "passes": len(passes),
                        "touches_per_seat": per_seat}}
-    path = os.path.join(args.run, "pass_events_bgfilter.json" if args.bg_filter else "pass_events.json")
+    suffix = ("_bgfilter" if args.bg_filter else "") + ("_arc" if args.touch_mode == "arc" else "")
+    path = os.path.join(args.run, f"pass_events{suffix}.json")
     json.dump(out, open(path, "w"), indent=2)
     print("saved", path)
 
