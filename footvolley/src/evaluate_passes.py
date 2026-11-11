@@ -4,17 +4,19 @@ Inputs:
     --run    a run folder with pass_events.json (from count_passes.py)
     --truth  a manual count from the team's pass counter (footvolley/ground_truth/*.json)
 
-Matching (one-to-one):
-    1. The manual times are shifted earlier by a FIXED --offset (key-press delay, default 0.1 s),
-       the same for every run, so different runs are compared fairly.
-    2. All (manual, system) pairs are sorted by time difference; each pair is matched
-       if both are still free and the difference is <= --window (default 0.5 s).
+MAIN metric (from 11.11): a system pass counts only if it is at the right time AND goes to the
+same receiver (to_seat) as the manual pass. Time-only matching was found to be close to chance level
+(passes come about every 1.25 s, so a 0.5 s window catches something almost always).
 
-Reported separately (no netting out of errors):
-    matched / missed (manual passes with no match) / invented (system passes with no match)
-    receiver correct (same to_seat) / who-to-whom correct (same from_seat and to_seat)
-For reference only, the same numbers at a 1.0 s window and with the per-run median offset
-used on 10.11 (that offset is fitted to the run itself, so it is not the main metric).
+Matching (one-to-one):
+    1. The manual times are shifted earlier by a FIXED --offset (key-press delay, 0.2 s measured
+       on 11.11), the same for every run.
+    2. Pairs with the same receiver are sorted by time difference; each pair is matched if both are
+       still free and the difference is <= --window (0.5 s).
+
+Reported: matched / chance (median matches when the system's times are shifted by several seconds,
+i.e. pure coincidence) / missed / invented / who-to-whom correct (receiver and passer both right).
+Only the part of "matched" above "chance" is real.
 
 Writes pass_eval.json into the run folder.
 
@@ -28,10 +30,12 @@ import os
 import statistics
 
 
-def match(truth, system, window, offset):
-    """truth/system: lists of dicts with time_s, from_seat, to_seat. Returns metrics and pairs."""
+def match(truth, system, window, offset, same_receiver=False):
+    """truth/system: lists of dicts with time_s, from_seat, to_seat. Returns metrics and pairs.
+    same_receiver=True: a pair can only match if the receiver (to_seat) is the same (the main metric)."""
     t_times = [t["time_s"] - offset for t in truth]
-    pairs = sorted((abs(tt - s["time_s"]), i, j) for i, tt in enumerate(t_times) for j, s in enumerate(system))
+    pairs = sorted((abs(tt - s["time_s"]), i, j) for i, tt in enumerate(t_times) for j, s in enumerate(system)
+                   if not same_receiver or truth[i]["to_seat"] == s["to_seat"])
     used_t, used_s, matched = set(), set(), []
     for d, i, j in pairs:
         if d > window:
@@ -51,6 +55,20 @@ def match(truth, system, window, offset):
     return metrics, sorted(matched)
 
 
+def chance_level(truth, system, window, offset, same_receiver=True,
+                 shifts=(3, 5, 7, 9, 11, 13, 17, 19, 23, 29)):
+    """Matches expected by chance: the system's times are shifted (cyclically over the clip) so that any
+    remaining match is a coincidence. Returns the median number of matches over the shifts."""
+    if not system:
+        return 0.0
+    end = max(max(t["time_s"] for t in truth), max(s["time_s"] for s in system)) + 0.1
+    counts = []
+    for sh in shifts:
+        moved = [dict(s, time_s=(s["time_s"] + sh) % end) for s in system]
+        counts.append(match(truth, moved, window, offset, same_receiver)[0]["matched"])
+    return statistics.median(counts)
+
+
 def median_offset(truth, system):
     """The 10.11 method: median of (truth time - nearest system time). Fitted per run."""
     if not system:
@@ -64,31 +82,31 @@ def main():
     ap.add_argument("--run", required=True)
     ap.add_argument("--truth", required=True)
     ap.add_argument("--window", type=float, default=0.5)
-    ap.add_argument("--offset", type=float, default=0.1, help="key-press delay subtracted from manual times")
+    ap.add_argument("--offset", type=float, default=0.2,
+                    help="key-press delay subtracted from manual times (0.2 s measured on 11.11, see experiments_log)")
     ap.add_argument("--events", default="pass_events.json", help="events file in the run folder")
     args = ap.parse_args()
 
     truth = json.load(open(args.truth))["passes"]
     system = json.load(open(os.path.join(args.run, args.events)))["passes"]
 
-    main_m, pairs = match(truth, system, args.window, args.offset)
-    wide_m, _ = match(truth, system, 1.0, args.offset)
-    med = median_offset(truth, system)
-    med_m, _ = match(truth, system, args.window, med)
+    # MAIN: a pass counts only if it is at the right time AND goes to the same receiver
+    main_m, pairs = match(truth, system, args.window, args.offset, same_receiver=True)
+    main_m["chance"] = chance_level(truth, system, args.window, args.offset, same_receiver=True)
+    # reference only: time-only matching (the old metric, close to chance level)
+    time_m, _ = match(truth, system, args.window, args.offset)
+    time_m["chance"] = chance_level(truth, system, args.window, args.offset, same_receiver=False)
 
-    def row(name, m):
-        return (f" {name:<34}{m['matched']:>8}{m['missed']:>8}{m['invented']:>9}"
-                f"{m['receiver_correct']:>10}{m['who_to_whom_correct']:>12}")
-
-    print("=" * 82)
+    print("=" * 86)
     print(f" {os.path.basename(os.path.normpath(args.run))} [{args.events}] vs {os.path.basename(args.truth)}")
-    print(f" manual passes {len(truth)} | system passes {len(system)}")
-    print("-" * 82)
-    print(f" {'':<34}{'matched':>8}{'missed':>8}{'invented':>9}{'receiver':>10}{'who->whom':>12}")
-    print(row(f"MAIN: {args.window}s window, offset {args.offset}s", main_m))
-    print(row(f"ref: 1.0s window, offset {args.offset}s", wide_m))
-    print(row(f"ref: {args.window}s, run-fitted offset {med:+.2f}s", med_m))
-    print("=" * 82)
+    print(f" manual passes {len(truth)} | system passes {len(system)} | window {args.window}s, offset {args.offset}s")
+    print("-" * 86)
+    print(f" {'':<40}{'matched':>8}{'chance':>8}{'missed':>8}{'invented':>9}{'who->whom':>11}")
+    print(f" {'MAIN: right time + right receiver':<40}{main_m['matched']:>8}{main_m['chance']:>8.1f}"
+          f"{main_m['missed']:>8}{main_m['invented']:>9}{main_m['who_to_whom_correct']:>11}")
+    print(f" {'ref: right time only (old metric)':<40}{time_m['matched']:>8}{time_m['chance']:>8.1f}"
+          f"{time_m['missed']:>8}{time_m['invented']:>9}{'':>11}")
+    print("=" * 86)
 
     t_times = [t["time_s"] - args.offset for t in truth]
     detail = []
@@ -110,8 +128,8 @@ def main():
                            "status": "invented"})
     detail.sort(key=lambda x: x.get("truth_time_s", x.get("system_time_s")))
 
-    out = {"truth_file": os.path.basename(args.truth), "main": main_m, "ref_window_1s": wide_m,
-           "ref_run_fitted_offset": med_m, "passes": detail}
+    out = {"truth_file": os.path.basename(args.truth), "metric": "right time + right receiver",
+           "main": main_m, "ref_time_only": time_m, "passes": detail}
     path = os.path.join(args.run, args.events.replace("pass_events", "pass_eval"))
     json.dump(out, open(path, "w"), indent=2)
     print("saved", path)

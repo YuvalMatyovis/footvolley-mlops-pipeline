@@ -3,8 +3,10 @@
 One entry per run. One change per experiment. Agree on the three lines (what / clip / success) **before** running.
 
 Reference for evaluation: manual counts made by the team with the pass counter (`footvolley/ground_truth/`).
-Main metric: pass-by-pass match against the manual count, 0.5 s window, reported separately as
-missed, invented (no netting out), receiver correct, and who-to-whom correct. Totals are secondary.
+Main metric (from 11.11): a system pass counts only if it is at the right time (0.5 s window,
+manual times shifted by a fixed 0.2 s key-press delay) AND goes to the same receiver. Always reported
+next to its chance level (the system's times shifted by several seconds). Also: missed, invented,
+who-to-whom. Time-only matching is no longer used: it is close to chance level.
 
 ## Template
 
@@ -81,6 +83,37 @@ missed, invented (no netting out), receiver correct, and who-to-whom correct. To
   2,767 ball detections were removed, real ones included, so "no_touch_ball_seen" grew from 3 to 8.
   Cause: with a cell the size of one ball, any cell has a small spread, so the "does not move" test did
   not separate a still object from a moving ball. Next: v2 with a stillness test over time (separate entry).
+
+---
+
+### 2026-11-11 - measurement: main metric, Gavish's delay, oracle mask, Ido's labels - done
+- **What:** no pipeline change. Fix the yardstick and find where the errors come from.
+- **Clip:** rally_56, the three people-detector runs of 11.11 (local)
+- **Files:** `results/2026-11-11_measurement/`, `footvolley/ground_truth/rally_56_ball_labels_ido_2026-11-10.json`
+
+1. **Time-only matching is close to chance.** With the system's times shifted by 3-29 s (pure
+   coincidence) time-only matching still gives ~22-25 "matches" vs 25-27 real. New main metric:
+   right time + right receiver, with its chance level reported.
+2. **Gavish's key-press delay, measured:** pairs where the system and Gavish agree on the receiver
+   (58 pairs over the 3 runs): median delay 0.21 s (per run 0.19 / 0.21 / 0.25). Fixed: offset 0.2 s,
+   window 0.5 s (below half the ~1.25 s between passes). Not to be changed per experiment.
+3. **The three detectors under the new metric** (right receiver / chance / missed / invented / who-to-whom):
+   yolo11n 15 / 8.5 / 31 / 32 / 5; RF-DETR Nano 15 / 8.5 / 31 / 29 / 5; RF-DETR Small 15 / 7.0 / 31 / 20 / 8.
+   Real signal is about 7-8 passes above chance. RF-DETR Small still best (fewest invented).
+4. **Oracle mask** (diagnosis only, never in the pipeline): ball detections at the left-edge object
+   (x < 100, y 210-370) and near the camera (y >= 700) removed by hand, RF-DETR Small run:
+   right receiver 15 -> 19 (chance 6), invented 20 -> 13, who-to-whom 8 -> 10. S1 touches 40 -> 13.
+   Caveat: the mask also removed real balls near the left player (S2 touches 21 -> 6), so the true
+   ceiling is somewhat higher. Remaining misses: touch at wrong seat 12, no ball 6, right seat but no
+   pass 5, ball seen but no touch 4. Conclusion: the fake ball costs a few passes, but it is not the
+   main problem; touch logic and missing detections matter as much.
+5. **Ido's 57 labelled frames** (49 with a ball; frame k assumed to be second k-1, one image per
+   second): the labelled ball is the chosen ball in 31 (63%), a lower-ranked candidate in 3 (6%), and
+   not among the 3 saved candidates (conf >= 0.10) in 15 (31%). Even when searching +-30 frames around
+   each assumed frame, 10 of 49 (20%) are never found: the detector misses the ball in at least ~20%
+   of these frames. In 2 of 8 frames with no ball the system reported one.
+- **Decision:** both code and training are needed. Code (selection by trajectory, touch-to-seat logic)
+  can recover part; ~20% detector misses need a better ball model.
 
 ---
 
