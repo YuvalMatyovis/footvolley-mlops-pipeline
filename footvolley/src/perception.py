@@ -84,9 +84,11 @@ class RfdetrPeople:
     def __init__(self, backend):
         import rfdetr
         name = self.CLASS_NAMES[backend]
-        if not hasattr(rfdetr, name):
-            raise SystemExit(f"this rfdetr version has no {name}; installed: {getattr(rfdetr, '__version__', '?')}")
-        self.model = getattr(rfdetr, name)()
+        try:
+            model_cls = getattr(rfdetr, name)
+        except (AttributeError, ImportError) as e:
+            raise SystemExit(f"cannot load {name} from rfdetr {versions().get('rfdetr', '?')}: {e}")
+        self.model = model_cls()
         self.person_id = self._person_id()
         self.class_ids_seen = set()
 
@@ -121,11 +123,13 @@ def make_people_detector(args):
 
 # ---------------------------------------------------------------- helpers
 def versions():
+    """Installed package versions (from pip metadata; rfdetr has no __version__)."""
+    from importlib.metadata import version, PackageNotFoundError
     out = {}
-    for mod in ("ultralytics", "rfdetr", "torch", "cv2"):
+    for pkg in ("ultralytics", "rfdetr", "torch", "opencv-python", "opencv-python-headless"):
         try:
-            out[mod] = __import__(mod).__version__
-        except Exception:
+            out[pkg] = version(pkg)
+        except PackageNotFoundError:
             pass
     return out
 
