@@ -30,6 +30,10 @@ SPIKE_PX = 45.0            # a detection this far from both neighbours (that are
 STATIC_PX = 8.0            # detections that stay within this radius ...
 STATIC_S = 0.40            # ... for at least this long are a stuck false detection, not a flying ball
 MIN_SPEED = 2.0            # a touch needs the ball to move at least this fast (px/frame) before or after
+# ---- background filter (off unless --bg-filter); values fixed before the 11.11 experiment, not tuned
+BG_MIN_SECONDS_FRAC = 0.12 # a spot is background if the "ball" is seen there in >= this share of the clip's seconds
+BG_MIN_SECONDS = 5         # ... and in at least this many different seconds
+BG_MAX_SPREAD = 0.35       # ... and its detections stay within this fraction of a ball size (it does not move)
 
 
 def load_run(run_dir):
@@ -40,6 +44,51 @@ def load_run(run_dir):
 
 def box_center(b):
     return ((b[0] + b[2]) / 2.0, (b[1] + b[3]) / 2.0)
+
+
+def background_spots(data, fps):
+    """Find image spots where a 'ball' is detected again and again over the whole clip without moving
+    (a fixed object such as something in the sky or on the sand). Sizes are relative to the median
+    ball size of the clip, so no pixel values are tied to one clip. Returns (spots, ball_size)."""
+    boxes = [(f["frame"], f["ball"]) for f in data if f["ball"]]
+    if not boxes:
+        return [], 0.0
+    size = float(np.median([((b[2] - b[0]) + (b[3] - b[1])) / 2.0 for _, b in boxes]))
+    min_secs = max(BG_MIN_SECONDS, int(round(BG_MIN_SECONDS_FRAC * len(data) / fps)))
+    spots = []
+    for shift in (0.0, 0.5):  # two grids, the second shifted half a cell, so a spot on a cell edge is not split
+        cells = {}
+        for fr, b in boxes:
+            c = np.array(box_center(b))
+            key = tuple(((c / size) + shift).astype(int))
+            cells.setdefault(key, []).append((fr, c))
+        for items in cells.values():
+            secs = {int(fr / fps) for fr, _ in items}
+            if len(secs) < min_secs:
+                continue
+            pts = np.array([c for _, c in items])
+            mid = np.median(pts, axis=0)
+            spread = float(np.median(np.hypot(*(pts - mid).T)))
+            if spread <= BG_MAX_SPREAD * size:
+                spots.append({"center": [round(float(mid[0]), 1), round(float(mid[1]), 1)],
+                              "detections": len(items), "seconds": len(secs), "spread_px": round(spread, 1)})
+    return spots, size
+
+
+def remove_background(data, fps):
+    """Return a copy of data with ball detections at background spots set to None, plus a report."""
+    spots, size = background_spots(data, fps)
+    out, removed = [], 0
+    for f in data:
+        g = dict(f)
+        b = f["ball"]
+        if b:
+            c = np.array(box_center(b))
+            if any(np.hypot(*(c - np.array(s["center"]))) <= size for s in spots):
+                g["ball"] = None
+                removed += 1
+        out.append(g)
+    return out, {"ball_size_px": round(size, 1), "spots": spots, "removed": removed}
 
 
 def clean_ball_track(data):
@@ -246,11 +295,22 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True, help="folder with tracking_data.json + meta.json")
     ap.add_argument("--seats", type=int, default=4)
+    ap.add_argument("--bg-filter", action="store_true", help="remove ball detections at fixed background spots")
     args = ap.parse_args()
 
     data, meta = load_run(args.run)
     fps = float(meta["fps"])
-    pos, rejected = clean_ball_track(data)
+    bg = None
+    if args.bg_filter:
+        data_ball, bg = remove_background(data, fps)
+        print(f" background filter: ball size {bg['ball_size_px']}px, removed {bg['removed']} detections at "
+              f"{len(bg['spots'])} spot(s):")
+        for sp in bg["spots"]:
+            print(f"   at x={sp['center'][0]:.0f} y={sp['center'][1]:.0f}: {sp['detections']} detections "
+                  f"in {sp['seconds']} different seconds, spread {sp['spread_px']}px")
+    else:
+        data_ball = data
+    pos, rejected = clean_ball_track(data_ball)
     pos, spikes = despike(pos)
     pos, static = drop_static_runs(pos, fps)
     raw_n = int(np.sum(~np.isnan(pos[:, 0])))
@@ -272,10 +332,10 @@ def main():
     print(" touches per seat: " + "  ".join(f"S{s}: {c}" for s, c in sorted(per_seat.items())))
     print("=" * 62)
 
-    out = {"fps": fps, "touches": touches, "passes": passes,
+    out = {"fps": fps, "bg_filter": bg, "touches": touches, "passes": passes,
            "summary": {"touches": len(touches), "passes": len(passes),
                        "touches_per_seat": per_seat}}
-    path = os.path.join(args.run, "pass_events.json")
+    path = os.path.join(args.run, "pass_events_bgfilter.json" if args.bg_filter else "pass_events.json")
     json.dump(out, open(path, "w"), indent=2)
     print("saved", path)
 

@@ -65,10 +65,11 @@ def main():
     ap.add_argument("--truth", required=True)
     ap.add_argument("--window", type=float, default=0.5)
     ap.add_argument("--offset", type=float, default=0.1, help="key-press delay subtracted from manual times")
+    ap.add_argument("--events", default="pass_events.json", help="events file in the run folder")
     args = ap.parse_args()
 
     truth = json.load(open(args.truth))["passes"]
-    system = json.load(open(os.path.join(args.run, "pass_events.json")))["passes"]
+    system = json.load(open(os.path.join(args.run, args.events)))["passes"]
 
     main_m, pairs = match(truth, system, args.window, args.offset)
     wide_m, _ = match(truth, system, 1.0, args.offset)
@@ -80,7 +81,7 @@ def main():
                 f"{m['receiver_correct']:>10}{m['who_to_whom_correct']:>12}")
 
     print("=" * 82)
-    print(f" {os.path.basename(os.path.normpath(args.run))} vs {os.path.basename(args.truth)}")
+    print(f" {os.path.basename(os.path.normpath(args.run))} [{args.events}] vs {os.path.basename(args.truth)}")
     print(f" manual passes {len(truth)} | system passes {len(system)}")
     print("-" * 82)
     print(f" {'':<34}{'matched':>8}{'missed':>8}{'invented':>9}{'receiver':>10}{'who->whom':>12}")
@@ -111,7 +112,7 @@ def main():
 
     out = {"truth_file": os.path.basename(args.truth), "main": main_m, "ref_window_1s": wide_m,
            "ref_run_fitted_offset": med_m, "passes": detail}
-    path = os.path.join(args.run, "pass_eval.json")
+    path = os.path.join(args.run, args.events.replace("pass_events", "pass_eval"))
     json.dump(out, open(path, "w"), indent=2)
     print("saved", path)
 

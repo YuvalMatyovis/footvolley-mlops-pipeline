@@ -58,6 +58,32 @@ missed, invented (no netting out), receiver correct, and who-to-whom correct. To
 
 ---
 
+### 2026-11-11 - ball background filter v1 - done, FAILED (not merged into the pipeline)
+- **What:** remove ball detections at fixed "background spots" (a spot where the ball is seen in many
+  different seconds and does not move). Only change; people = RF-DETR Small run, all thresholds as before.
+- **Clip:** rally_56, the RF-DETR Small run of 11.11 (local, no Colab)
+- **Success means (agreed before):** matched >= 29 (beyond noise from 26), invented <= 9, S1 touches far below 40.
+- **Branch:** exp/ball-background-filter (`count_passes.py --bg-filter`)
+- **Settings (fixed before the run):** grid cell = median ball size (19 px); spot = seen in >= 12% of the
+  clip's seconds (min 5; here 7) and median distance from the spot's center <= 0.35 ball size
+- **Results** (files: `results/2026-11-11_ball_bg_filter_v1/`):
+
+| | touches (S1/S2/S3/S4) | passes | matched | missed | invented | receiver | who-to-whom |
+| :--- | :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| baseline (RF-DETR Small) | 86 (40/21/6/19) | 35 | 26 | 20 | 9 | 11 | 7 |
+| background filter v1 | 59 (14/14/11/20) | 41 | 27 | 19 | 14 | 13 | 7 |
+
+  Missed-pass groups: baseline touch_right_seat 9, touch_wrong_seat 8, no_touch_ball_seen 3 ->
+  filter touch_right_seat 4, touch_wrong_seat 6, no_touch_ball_seen 8, no_ball 1.
+- **Notes / decision:** FAILED on matched and invented. The S1 overcount is gone (40 -> 14 touches) and
+  the spots at the left edge (x 25-90, y 230-360) are the object seen by eye. But the filter also marked
+  spots in the middle of the circle (x 230-330, y 150-270) where the real ball passes often: 1,071 of
+  2,767 ball detections were removed, real ones included, so "no_touch_ball_seen" grew from 3 to 8.
+  Cause: with a cell the size of one ball, any cell has a small spread, so the "does not move" test did
+  not separate a still object from a moving ball. Next: v2 with a stillness test over time (separate entry).
+
+---
+
 ## Prior results (reported 10.11, code not saved, not re-verified)
 
 Count_passes v1 vs Gavish's count (46 passes), 0.5 s window, one-to-one matching:

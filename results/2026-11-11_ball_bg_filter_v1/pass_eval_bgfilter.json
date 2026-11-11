@@ -1,0 +1,680 @@
+{
+  "truth_file": "rally_56_manual_gavish_2026-11-10.json",
+  "main": {
+    "truth_passes": 46,
+    "system_passes": 41,
+    "matched": 27,
+    "missed": 19,
+    "invented": 14,
+    "receiver_correct": 13,
+    "who_to_whom_correct": 7,
+    "window_s": 0.5,
+    "offset_s": 0.1
+  },
+  "ref_window_1s": {
+    "truth_passes": 46,
+    "system_passes": 41,
+    "matched": 29,
+    "missed": 17,
+    "invented": 12,
+    "receiver_correct": 13,
+    "who_to_whom_correct": 7,
+    "window_s": 1.0,
+    "offset_s": 0.1
+  },
+  "ref_run_fitted_offset": {
+    "truth_passes": 46,
+    "system_passes": 41,
+    "matched": 27,
+    "missed": 19,
+    "invented": 14,
+    "receiver_correct": 13,
+    "who_to_whom_correct": 7,
+    "window_s": 0.5,
+    "offset_s": 0.14
+  },
+  "passes": [
+    {
+      "truth_time_s": 1.32,
+      "truth": [
+        4,
+        2
+      ],
+      "status": "missed"
+    },
+    {
+      "system_time_s": 2.38,
+      "system": [
+        1,
+        2
+      ],
+      "status": "invented"
+    },
+    {
+      "system_time_s": 2.69,
+      "system": [
+        2,
+        1
+      ],
+      "status": "invented"
+    },
+    {
+      "truth_time_s": 3.71,
+      "system_time_s": 3.6,
+      "diff_s": -0.11,
+      "truth": [
+        2,
+        4
+      ],
+      "system": [
+        1,
+        4
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 5.03,
+      "system_time_s": 4.77,
+      "diff_s": -0.26,
+      "truth": [
+        4,
+        1
+      ],
+      "system": [
+        4,
+        1
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 6.08,
+      "system_time_s": 5.74,
+      "diff_s": -0.34,
+      "truth": [
+        1,
+        4
+      ],
+      "system": [
+        1,
+        4
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 6.86,
+      "system_time_s": 6.79,
+      "diff_s": -0.07,
+      "truth": [
+        4,
+        3
+      ],
+      "system": [
+        4,
+        3
+      ],
+      "status": "matched"
+    },
+    {
+      "system_time_s": 7.34,
+      "system": [
+        3,
+        2
+      ],
+      "status": "invented"
+    },
+    {
+      "truth_time_s": 7.97,
+      "system_time_s": 7.56,
+      "diff_s": -0.41,
+      "truth": [
+        3,
+        1
+      ],
+      "system": [
+        2,
+        4
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 8.62,
+      "truth": [
+        1,
+        2
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 10.1,
+      "system_time_s": 10.47,
+      "diff_s": 0.37,
+      "truth": [
+        2,
+        4
+      ],
+      "system": [
+        1,
+        4
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 11.5,
+      "truth": [
+        4,
+        1
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 12.89,
+      "system_time_s": 12.78,
+      "diff_s": -0.11,
+      "truth": [
+        1,
+        3
+      ],
+      "system": [
+        4,
+        3
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 13.61,
+      "truth": [
+        3,
+        4
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 14.71,
+      "system_time_s": 14.88,
+      "diff_s": 0.17,
+      "truth": [
+        4,
+        2
+      ],
+      "system": [
+        3,
+        1
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 18.16,
+      "system_time_s": 17.96,
+      "diff_s": -0.2,
+      "truth": [
+        2,
+        4
+      ],
+      "system": [
+        2,
+        3
+      ],
+      "status": "matched"
+    },
+    {
+      "system_time_s": 18.43,
+      "system": [
+        3,
+        1
+      ],
+      "status": "invented"
+    },
+    {
+      "truth_time_s": 19.76,
+      "truth": [
+        4,
+        1
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 20.82,
+      "truth": [
+        1,
+        3
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 22.32,
+      "system_time_s": 22.72,
+      "diff_s": 0.4,
+      "truth": [
+        3,
+        2
+      ],
+      "system": [
+        1,
+        2
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 23.14,
+      "system_time_s": 23.03,
+      "diff_s": -0.11,
+      "truth": [
+        2,
+        4
+      ],
+      "system": [
+        2,
+        4
+      ],
+      "status": "matched"
+    },
+    {
+      "system_time_s": 24.27,
+      "system": [
+        4,
+        1
+      ],
+      "status": "invented"
+    },
+    {
+      "truth_time_s": 25.64,
+      "truth": [
+        4,
+        3
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 26.04,
+      "truth": [
+        3,
+        1
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 27.06,
+      "system_time_s": 27.19,
+      "diff_s": 0.13,
+      "truth": [
+        1,
+        2
+      ],
+      "system": [
+        1,
+        4
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 27.67,
+      "truth": [
+        2,
+        4
+      ],
+      "status": "missed"
+    },
+    {
+      "system_time_s": 29.04,
+      "system": [
+        4,
+        1
+      ],
+      "status": "invented"
+    },
+    {
+      "truth_time_s": 29.44,
+      "system_time_s": 29.64,
+      "diff_s": 0.2,
+      "truth": [
+        4,
+        3
+      ],
+      "system": [
+        1,
+        4
+      ],
+      "status": "matched"
+    },
+    {
+      "system_time_s": 30.1,
+      "system": [
+        4,
+        1
+      ],
+      "status": "invented"
+    },
+    {
+      "system_time_s": 30.42,
+      "system": [
+        1,
+        2
+      ],
+      "status": "invented"
+    },
+    {
+      "truth_time_s": 30.86,
+      "system_time_s": 30.85,
+      "diff_s": -0.01,
+      "truth": [
+        3,
+        4
+      ],
+      "system": [
+        2,
+        4
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 31.53,
+      "system_time_s": 31.09,
+      "diff_s": -0.44,
+      "truth": [
+        4,
+        2
+      ],
+      "system": [
+        4,
+        3
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 32.93,
+      "truth": [
+        2,
+        4
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 33.52,
+      "truth": [
+        4,
+        2
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 34.8,
+      "truth": [
+        2,
+        3
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 36.36,
+      "system_time_s": 36.74,
+      "diff_s": 0.38,
+      "truth": [
+        3,
+        2
+      ],
+      "system": [
+        2,
+        1
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 37.01,
+      "system_time_s": 36.99,
+      "diff_s": -0.02,
+      "truth": [
+        2,
+        4
+      ],
+      "system": [
+        1,
+        3
+      ],
+      "status": "matched"
+    },
+    {
+      "system_time_s": 37.44,
+      "system": [
+        1,
+        4
+      ],
+      "status": "invented"
+    },
+    {
+      "truth_time_s": 38.03,
+      "system_time_s": 37.69,
+      "diff_s": -0.34,
+      "truth": [
+        4,
+        1
+      ],
+      "system": [
+        4,
+        1
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 39.54,
+      "system_time_s": 39.71,
+      "diff_s": 0.17,
+      "truth": [
+        1,
+        3
+      ],
+      "system": [
+        1,
+        4
+      ],
+      "status": "matched"
+    },
+    {
+      "system_time_s": 41.2,
+      "system": [
+        4,
+        2
+      ],
+      "status": "invented"
+    },
+    {
+      "truth_time_s": 41.81,
+      "truth": [
+        3,
+        4
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 42.3,
+      "truth": [
+        4,
+        2
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 42.78,
+      "truth": [
+        2,
+        4
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 43.42,
+      "truth": [
+        4,
+        2
+      ],
+      "status": "missed"
+    },
+    {
+      "system_time_s": 44.45,
+      "system": [
+        2,
+        4
+      ],
+      "status": "invented"
+    },
+    {
+      "truth_time_s": 44.77,
+      "system_time_s": 44.7,
+      "diff_s": -0.07,
+      "truth": [
+        2,
+        3
+      ],
+      "system": [
+        4,
+        2
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 45.46,
+      "system_time_s": 45.4,
+      "diff_s": -0.06,
+      "truth": [
+        3,
+        1
+      ],
+      "system": [
+        2,
+        1
+      ],
+      "status": "matched"
+    },
+    {
+      "system_time_s": 46.58,
+      "system": [
+        1,
+        3
+      ],
+      "status": "invented"
+    },
+    {
+      "truth_time_s": 46.96,
+      "system_time_s": 47.18,
+      "diff_s": 0.22,
+      "truth": [
+        1,
+        3
+      ],
+      "system": [
+        3,
+        4
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 47.87,
+      "truth": [
+        3,
+        4
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 49.69,
+      "truth": [
+        4,
+        3
+      ],
+      "status": "missed"
+    },
+    {
+      "truth_time_s": 50.33,
+      "system_time_s": 50.55,
+      "diff_s": 0.22,
+      "truth": [
+        3,
+        1
+      ],
+      "system": [
+        4,
+        2
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 52.03,
+      "system_time_s": 52.15,
+      "diff_s": 0.12,
+      "truth": [
+        1,
+        2
+      ],
+      "system": [
+        2,
+        4
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 52.68,
+      "system_time_s": 52.57,
+      "diff_s": -0.11,
+      "truth": [
+        2,
+        4
+      ],
+      "system": [
+        4,
+        3
+      ],
+      "status": "matched"
+    },
+    {
+      "system_time_s": 52.87,
+      "system": [
+        3,
+        4
+      ],
+      "status": "invented"
+    },
+    {
+      "truth_time_s": 53.97,
+      "system_time_s": 53.87,
+      "diff_s": -0.1,
+      "truth": [
+        4,
+        3
+      ],
+      "system": [
+        4,
+        3
+      ],
+      "status": "matched"
+    },
+    {
+      "truth_time_s": 55.35,
+      "system_time_s": 55.42,
+      "diff_s": 0.07,
+      "truth": [
+        3,
+        4
+      ],
+      "system": [
+        3,
+        4
+      ],
+      "status": "matched"
+    },
+    {
+      "system_time_s": 56.61,
+      "system": [
+        2,
+        4
+      ],
+      "status": "invented"
+    },
+    {
+      "truth_time_s": 57.59,
+      "truth": [
+        4,
+        2
+      ],
+      "status": "missed"
+    }
+  ]
+}
