@@ -149,6 +149,20 @@ who-to-whom. Time-only matching is no longer used: it is close to chance level.
 
 ---
 
+### 2026-11-11 - eye check of 10 false S1 touches (RF-DETR Small, events_preview.mp4) - done
+S1 has 40 touches vs 8 real receptions. 10 S1 touches far from any real S1 play were checked by eye (Sinai):
+- **7 of 10 - a fixed object detected as the ball** (sky / background at the left edge, also at 0.13 s centre-right
+  and 18.48 s right above the heads; 30.19 s an object on the sand). Times: 0.13, 10.24, 15.49, 18.48, 23.55, 25.07, 30.19.
+- **2 of 10 - real ball, 2D overlap**: the ball passes in front of / next to S1 in the image without a touch
+  (1.88 s); at 16.90 s S2 hits it while S1 and S2 overlap in the image (occlusion, extra bad detections).
+- **1 of 10 - S1 not in the frame** but the touch is still given to S1 (4.04 s); at 30.19 s only S1's right leg is in
+  the frame, so a partial box at the frame edge "owns" the touch.
+- **Conclusion:** fixed objects are the main cause, in several places (not only the left edge). Next: a motion-based
+  multi-frame ball tracker (VballNet, beach volleyball) or a background filter based on stillness over time; and a
+  rule that a partial box at the frame edge cannot own a touch.
+
+---
+
 ## Prior results (reported 10.11, code not saved, not re-verified)
 
 Count_passes v1 vs Gavish's count (46 passes), 0.5 s window, one-to-one matching:
