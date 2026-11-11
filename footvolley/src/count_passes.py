@@ -34,6 +34,12 @@ MIN_SPEED = 2.0            # a touch needs the ball to move at least this fast (
 ARC_HALF_S = 0.10          # look this long before and after each frame (6 frames at 60 fps)
 ARC_BREAK = 0.40           # touch if one smooth arc cannot fit the window: RMS error > this x ball size
 ARC_MIN_VALID = 0.7        # need ball positions in at least this share of the window's frames
+# ---- ball selection by trajectory (off unless --ball-select track); values fixed before the 11.11 experiment
+TRK_GATE = 2.5             # pick the candidate nearest the predicted position if within this many ball sizes
+TRK_GATE_GROW = 0.5        # ... plus this many ball sizes per extra frame since the last pick
+TRK_REINIT_FRAMES = 6      # no pick for this many frames -> restart from the most confident candidate
+TRK_STATIC_S = 0.2         # picks that stayed within half a ball size for this long ...
+TRK_STATIC_SPREAD = 0.5    # ... are a stuck object: switch to another candidate if one exists
 # ---- background filter (off unless --bg-filter); values fixed before the 11.11 experiment, not tuned
 BG_MIN_SECONDS_FRAC = 0.12 # a spot is background if the "ball" is seen there in >= this share of the clip's seconds
 BG_MIN_SECONDS = 5         # ... and in at least this many different seconds
@@ -259,6 +265,55 @@ def detect_touches(pos, seats_per_frame, fps):
     return touches
 
 
+def select_ball_by_track(data, fps, conf_min):
+    """Return a copy of data where each frame's ball is chosen among its saved candidates
+    (ball_candidates, confidence >= conf_min) as the one that continues the ball's path
+    (constant-velocity prediction from the last two picks), not simply the most confident one.
+    A frame with no candidate near the prediction is left empty (short gaps are filled later)."""
+    size = ball_size_px(data)
+    static_n = max(3, int(round(TRK_STATIC_S * fps)))
+    out, hist = [], []          # hist: list of (frame, np.array center)
+    switched = empty = 0
+    for f in data:
+        g = dict(f)
+        cands = [c for c in f.get("ball_candidates", []) if c[4] >= conf_min]
+        cents = [np.array(box_center(c)) for c in cands]
+        pick = None
+        if cands:
+            if not hist or f["frame"] - hist[-1][0] > TRK_REINIT_FRAMES:
+                pick = 0                                   # restart: most confident
+            else:
+                t1, p1 = hist[-1]
+                dt = f["frame"] - t1
+                pred = p1 + ((p1 - hist[-2][1]) / max(t1 - hist[-2][0], 1)) * dt if len(hist) > 1 else p1
+                gate = size * (TRK_GATE + TRK_GATE_GROW * (dt - 1))
+                d = [float(np.hypot(*(c - pred))) for c in cents]
+                j = int(np.argmin(d))
+                pick = j if d[j] <= gate else None
+            # stuck on something that does not move? switch to another candidate if there is one
+            if pick is not None and len(hist) >= static_n:
+                recent = np.array([p for _, p in hist[-static_n:]])
+                if np.max(np.hypot(*(recent - recent.mean(axis=0)).T)) <= TRK_STATIC_SPREAD * size:
+                    others = [k for k in range(len(cands))
+                              if np.hypot(*(cents[k] - recent.mean(axis=0))) > 2 * size]
+                    if others:
+                        pick = others[0]
+                        hist = []
+                        switched += 1
+        if pick is None:
+            g["ball"] = None
+            if f["ball"]:
+                empty += 1
+        else:
+            g["ball"] = cands[pick]
+            hist.append((f["frame"], cents[pick]))
+            hist = hist[-max(static_n, 2):]
+        out.append(g)
+    changed = sum(1 for a, b in zip(data, out) if a["ball"] != b["ball"])
+    return out, {"ball_size_px": round(size, 1), "frames_changed": changed,
+                 "emptied": empty, "static_switches": switched}
+
+
 def ball_size_px(data):
     sizes = [((b[2] - b[0]) + (b[3] - b[1])) / 2.0 for b in (f["ball"] for f in data) if b]
     return float(np.median(sizes)) if sizes else 15.0
@@ -359,6 +414,8 @@ def main():
     ap.add_argument("--run", required=True, help="folder with tracking_data.json + meta.json")
     ap.add_argument("--seats", type=int, default=4)
     ap.add_argument("--bg-filter", action="store_true", help="remove ball detections at fixed background spots")
+    ap.add_argument("--ball-select", choices=("conf", "track"), default="conf",
+                    help="conf = most confident candidate (original), track = candidate that continues the path")
     ap.add_argument("--touch-mode", choices=("dv", "arc"), default="dv",
                     help="dv = 2-frame velocity change (original), arc = break in the ball's arc")
     args = ap.parse_args()
@@ -375,6 +432,10 @@ def main():
                   f"in {sp['seconds']} different seconds, spread {sp['spread_px']}px")
     else:
         data_ball = data
+    trk = None
+    if args.ball_select == "track":
+        data_ball, trk = select_ball_by_track(data_ball, fps, float(meta.get("conf_ball", 0.25)))
+        print(f" track selection: {trk}")
     pos, rejected = clean_ball_track(data_ball)
     pos, spikes = despike(pos)
     pos, static = drop_static_runs(pos, fps)
@@ -400,10 +461,11 @@ def main():
     print(" touches per seat: " + "  ".join(f"S{s}: {c}" for s, c in sorted(per_seat.items())))
     print("=" * 62)
 
-    out = {"fps": fps, "bg_filter": bg, "touches": touches, "passes": passes,
+    out = {"fps": fps, "bg_filter": bg, "track_select": trk, "touches": touches, "passes": passes,
            "summary": {"touches": len(touches), "passes": len(passes),
                        "touches_per_seat": per_seat}}
-    suffix = ("_bgfilter" if args.bg_filter else "") + ("_arc" if args.touch_mode == "arc" else "")
+    suffix = (("_bgfilter" if args.bg_filter else "") + ("_track" if args.ball_select == "track" else "")
+              + ("_arc" if args.touch_mode == "arc" else ""))
     path = os.path.join(args.run, f"pass_events{suffix}.json")
     json.dump(out, open(path, "w"), indent=2)
     print("saved", path)

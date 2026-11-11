@@ -132,6 +132,23 @@ who-to-whom. Time-only matching is no longer used: it is close to chance level.
 
 ---
 
+### 2026-11-11 - ball selection by trajectory - done, FAILED (kept off)
+- **What:** each frame's ball is chosen among the saved candidates (confidence >= 0.25) as the one nearest the
+  position predicted from the last two picks (constant velocity), within 2.5 ball sizes (+0.5 per extra frame);
+  none near -> frame left empty; stuck on a still object for 0.2 s -> switch; no pick for 6 frames -> restart from
+  the most confident. Touch detection unchanged (dv). Only change. `count_passes.py --ball-select track`
+- **Clip:** rally_56, RF-DETR Small run (local)
+- **Success means (agreed before):** right receiver >= 18, invented <= 20, S1 touches well below 40.
+- **Results** (`results/2026-11-11_ball_track_select/`), right receiver / chance / missed / invented / who-to-whom:
+  baseline 15 / 7.0 / 31 / 20 / 8; track 18 / 9.5 / 28 / 34 / 9. Passes 35 -> 52, touches S1/S2/S3/S4 40/21/6/19 -> 44/19/11/26.
+  Selection changed the ball in 1,033 frames, left 507 frames empty, 30 stuck-object switches.
+- **Notes / decision:** FAILED. Right receiver reached 18 but invented rose to 34, and the chance level rose with
+  the number of passes (9.5), so the real gain over chance is ~0.5 pass. S1 touches did not drop. The tracker does
+  not stay off the left-edge object. Open question for next time: are the S1 touches the fixed object, or the real
+  ball passing in front of S1's large box near the camera (2D overlap, no depth)? Look by eye before more code.
+
+---
+
 ## Prior results (reported 10.11, code not saved, not re-verified)
 
 Count_passes v1 vs Gavish's count (46 passes), 0.5 s window, one-to-one matching:
