@@ -2,7 +2,7 @@
 
 One entry per run. One change per experiment. Agree on the three lines (what / clip / success) **before** running.
 
-Reference for evaluation: manual counts made by the team with the pass counter (`footvolley/ground_truth/`).
+Reference for evaluation: manual counts made by the team with the pass counter (`ground_truth/`).
 Main metric (from 11.11): a system pass counts only if it is at the right time (0.5 s window,
 manual times shifted by a fixed 0.2 s key-press delay) AND goes to the same receiver. Always reported
 next to its chance level (the system's times shifted by several seconds). Also: missed, invented,
@@ -89,7 +89,7 @@ who-to-whom. Time-only matching is no longer used: it is close to chance level.
 ### 2026-11-11 - measurement: main metric, Gavish's delay, oracle mask, Ido's labels - done
 - **What:** no pipeline change. Fix the yardstick and find where the errors come from.
 - **Clip:** rally_56, the three people-detector runs of 11.11 (local)
-- **Files:** `results/2026-11-11_measurement/`, `footvolley/ground_truth/rally_56_ball_labels_ido_2026-11-10.json`
+- **Files:** `results/2026-11-11_measurement/`, `ground_truth/rally_56_ball_labels_ido_2026-11-10.json`
 
 1. **Time-only matching is close to chance.** With the system's times shifted by 3-29 s (pure
    coincidence) time-only matching still gives ~22-25 "matches" vs 25-27 real. New main metric:

@@ -12,8 +12,8 @@ around it (0.6 s before to 0.6 s after) and puts it in one group:
 Run it after every experiment and compare the group sizes.
 
 Usage:
-    python footvolley/src/diagnose_misses.py --run footvolley/outputs/<run> \
-        --truth footvolley/ground_truth/rally_56_manual_gavish_2026-11-10.json [--suffix _bgfilter]
+    python src/diagnose_misses.py --run outputs/<run> \
+        --truth ground_truth/rally_56_manual_gavish_2026-11-10.json [--suffix _bgfilter]
 """
 import argparse
 import collections

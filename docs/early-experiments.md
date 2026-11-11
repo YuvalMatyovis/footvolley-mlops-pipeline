@@ -5,10 +5,10 @@ the longest chain without the ball dropping.
 
 ## Run
 ```bash
-python footvolley/src/footvolley.py        # tracking + touches/passes + annotated video
-python footvolley/src/ball_experiment.py   # ball detector comparison
+python src/footvolley.py        # tracking + touches/passes + annotated video
+python src/ball_experiment.py   # ball detector comparison
 ```
-Put the clip in `footvolley/data/foochi_test.mp4`.
+Put the clip in `data/foochi_test.mp4`.
 
 ## Findings (one 18s clip, no ground truth yet)
 - Players: detected and tracked reliably (~90%+ by visual check, stable IDs).

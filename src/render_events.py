@@ -4,7 +4,7 @@ Use it to check count_passes by eye: watch the video, count passes yourself and
 compare with the on-screen counter.
 
 Usage:
-    python footvolley/src/render_events.py --video <clip.mp4> --run <run folder>
+    python src/render_events.py --video <clip.mp4> --run <run folder>
 Needs tracking_data.json, meta.json and pass_events.json in the run folder
 (perception.py creates the first two, count_passes.py the third).
 """

@@ -7,4 +7,4 @@
 - With the ball class selected (`classes=[0]`) on the first 2,690 frames of `rally_56`: ball found in 12.3% of frames (avg confidence 0.35) vs 65.5% for `ball_v2` under the same settings; its person detections were also weaker than yolo11n (0.90 vs 2.02 per frame at the older settings).
 - Not diagnosed yet. Suspects: label quality or inconsistent ball boxes in the added data, class setup, resolution mismatch. A lower confidence threshold (0.10-0.15) was not tried.
 - Decision: keep `ball_v2` for the ball and `yolo11n` for people until the added labels are audited and the model retrained.
-- Weights: `footvolley/models/ball_v3.pt` (not in git).
+- Weights: `models/ball_v3.pt` (not in git).

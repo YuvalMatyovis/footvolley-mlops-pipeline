@@ -10,8 +10,8 @@ Player metrics (no ground truth needed):
     people-model seconds per frame (speed, for the cost model).
 
 Usage:
-    python footvolley/src/compare_people.py footvolley/outputs/<run A> footvolley/outputs/<run B> ... \
-        --out footvolley/outputs/comparison_people.md
+    python src/compare_people.py outputs/<run A> outputs/<run B> ... \
+        --out outputs/comparison_people.md
 """
 import argparse
 import json

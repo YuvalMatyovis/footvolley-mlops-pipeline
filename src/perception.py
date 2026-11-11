@@ -22,9 +22,9 @@ Writes to <out-root>/<clip>_<backend>_<date>_<time>/ :
     preview.mp4          H.264 video for viewing (orange boxes = small players)
 
 Usage (from the repo root):
-    python footvolley/src/perception.py --clip footvolley/data/clips/rally_56s.mp4 --people-backend rfdetr-small
+    python src/perception.py --clip data/clips/rally_56s.mp4 --people-backend rfdetr-small
 Quick test on the first 150 frames:
-    python footvolley/src/perception.py --clip <clip> --people-backend yolo11n --max-frames 150
+    python src/perception.py --clip <clip> --people-backend yolo11n --max-frames 150
 """
 import argparse
 import json
@@ -41,12 +41,12 @@ N_BALL_CANDIDATES = 3
 
 def parse_args():
     ap = argparse.ArgumentParser(description="Detect players and the ball in every frame")
-    ap.add_argument("--clip", default="footvolley/data/clips/rally_56s.mp4")
+    ap.add_argument("--clip", default="data/clips/rally_56s.mp4")
     ap.add_argument("--people-backend", choices=PEOPLE_BACKENDS, default="yolo11n")
-    ap.add_argument("--people-model", default="footvolley/models/yolo11n.pt",
+    ap.add_argument("--people-model", default="models/yolo11n.pt",
                     help="weights for the yolo11n backend (a bare 'yolo11n.pt' downloads the official file)")
-    ap.add_argument("--ball-model", default="footvolley/models/ball_v2.pt")
-    ap.add_argument("--out-root", default="footvolley/outputs")
+    ap.add_argument("--ball-model", default="models/ball_v2.pt")
+    ap.add_argument("--out-root", default="outputs")
     ap.add_argument("--ball-imgsz", type=int, default=1088)
     ap.add_argument("--conf-ball", type=float, default=0.25)
     ap.add_argument("--min-ball-area", type=float, default=15)

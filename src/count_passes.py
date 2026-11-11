@@ -5,7 +5,7 @@ detect touches (sharp velocity change while the ball is near a player) ->
 count passes (ball goes from one seat to a different seat).
 
 Usage:
-    python footvolley/src/count_passes.py --run footvolley/outputs/<run folder>
+    python src/count_passes.py --run outputs/<run folder>
 (the folder must contain tracking_data.json and meta.json from perception)
 """
 import argparse

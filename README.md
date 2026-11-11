@@ -43,15 +43,15 @@ All experiments, one by one: [`experiments_log.md`](experiments_log.md). Result 
 
 ```bash
 pip install -r requirements.txt
-# put the clip in footvolley/data/clips/ and the weights in footvolley/models/ (not in git)
+# put the clip in data/clips/ and the weights in models/ (not in git)
 
-python footvolley/src/perception.py --clip footvolley/data/clips/rally_56.mp4
-python footvolley/src/count_passes.py --run footvolley/outputs/<run folder>
-python footvolley/src/render_events.py --video footvolley/data/clips/rally_56.mp4 --run footvolley/outputs/<run folder>
+python src/perception.py --clip data/clips/rally_56.mp4
+python src/count_passes.py --run outputs/<run folder>
+python src/render_events.py --video data/clips/rally_56.mp4 --run outputs/<run folder>
 
 # compare with the manual count
-python footvolley/src/evaluate_passes.py --run footvolley/outputs/<run folder> --truth footvolley/ground_truth/rally_56_manual_gavish_2026-11-10.json
-python footvolley/src/diagnose_misses.py --run footvolley/outputs/<run folder> --truth footvolley/ground_truth/rally_56_manual_gavish_2026-11-10.json
+python src/evaluate_passes.py --run outputs/<run folder> --truth ground_truth/rally_56_manual_gavish_2026-11-10.json
+python src/diagnose_misses.py --run outputs/<run folder> --truth ground_truth/rally_56_manual_gavish_2026-11-10.json
 ```
 
 On CPU it is slow. I run it on a free Colab GPU with `notebooks/exp_people_detector.ipynb` (clip and weights from Google Drive).
@@ -59,15 +59,14 @@ On CPU it is slow. I run it on a free Colab GPU with `notebooks/exp_people_detec
 ## Repository layout
 
 ```
-footvolley/
-  src/           the pipeline and the evaluation scripts
-  tools/         preparing frames and labels for training
-  ground_truth/  manual pass counts and Ido's ball labels
-  training/      model cards for ball_v1, ball_v2, ball_v3
-  models/ data/ outputs/   weights, clips and runs (not in git)
-notebooks/       Colab notebook
-results/         small result files, one folder per experiment
-docs/            status reports and early notes
+src/            the pipeline and the evaluation scripts
+tools/          preparing frames and labels for training
+training/       model cards for ball_v1, ball_v2, ball_v3
+ground_truth/   manual pass counts and Ido's ball labels
+notebooks/      Colab notebook for GPU runs
+results/        small result files, one folder per experiment
+docs/           status reports and early notes
+data/ models/ outputs/   clips, weights and runs (local only, not in git)
 experiments_log.md   what each experiment tested, the result and the decision
 ```
 

@@ -2,7 +2,7 @@
 
 Inputs:
     --run    a run folder with pass_events.json (from count_passes.py)
-    --truth  a manual count from the team's pass counter (footvolley/ground_truth/*.json)
+    --truth  a manual count from the team's pass counter (ground_truth/*.json)
 
 MAIN metric (from 11.11): a system pass counts only if it is at the right time AND goes to the
 same receiver (to_seat) as the manual pass. Time-only matching was found to be close to chance level
@@ -21,8 +21,8 @@ Only the part of "matched" above "chance" is real.
 Writes pass_eval.json into the run folder.
 
 Usage:
-    python footvolley/src/evaluate_passes.py --run footvolley/outputs/<run> \
-        --truth footvolley/ground_truth/rally_56_manual_gavish_2026-11-10.json
+    python src/evaluate_passes.py --run outputs/<run> \
+        --truth ground_truth/rally_56_manual_gavish_2026-11-10.json
 """
 import argparse
 import json
